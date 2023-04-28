@@ -3,39 +3,7 @@
 #include <math.h>
 #include <ncurses.h>
 
-#define MIN(x, y) ((x) < (y) ? (x) : (y))
-#define MAX(x, y) ((x) > (y) ? (x) : (y))
-#define ABS(x) ((x) < 0 ? -(x) : (x))
-#define MOD(a, b) ((a % b) < 0 ? ((a % b) + b) : (a % b))
-
-#define INSERT_MODE 0x00
-#define COMMAND_MODE 0x01
-#define OPERATION_INSERT 0x45
-#define OPERATION_DELETE 0x90
-#define MOVEMENT_FORWARD 0x40
-#define MOVEMENT_BACKWARD 0x85
-#define KEY_ESC 27
-
-typedef struct {
-  WINDOW* t_window;
-  WINDOW* c_window;
-
-  int mode;
-  int eof;
-  int ch;
-
-  int terminal_y;
-  int terminal_x;
-} screen;
-
-screen* init_screen();
-void kill();
-void render_window(screen* scr);
-void handle_commands_inputs(screen* scr, int ch);
-void handle_text_inputs(screen* scr, int ch);
-void handle_cursor_movement(screen* scr, int movement);
-void handle_line_wrap(screen* scr, int operation);
-void insert_ch(int ch);
+#include "main.h"
 
 int main(void) {
   int ch = 0;
@@ -141,7 +109,7 @@ void handle_text_inputs(screen* scr, int ch) {
       wrefresh(t_window);
       break;
 
-    case KEY_RIGHT:
+    case '=':
       handle_cursor_movement(scr, MOVEMENT_FORWARD);
       wrefresh(t_window);
       break;
@@ -151,6 +119,7 @@ void handle_text_inputs(screen* scr, int ch) {
     case '\b':
       handle_cursor_movement(scr, MOVEMENT_BACKWARD);
       wdelch(t_window);
+      handle_line_wrap(scr, OPERATION_DELETE);
       wrefresh(t_window);
       break;
 
@@ -190,18 +159,34 @@ void handle_cursor_movement(screen* scr, int movement) {
 
 void handle_line_wrap(screen* scr, int operation) {
   WINDOW* t_window = scr->t_window;
-
+  
   int max_rows = scr->terminal_y;
   int cursor_y, cursor_x;
   getyx(scr->t_window, cursor_y, cursor_x);
-    
-  for (int row = max_rows - 1; row >= cursor_y; row--) {
-    wmove(t_window, row, scr->terminal_x - 1);
-    char ch = winch(t_window);
-    wdelch(t_window);
 
-    wmove(t_window, row + 1, 0);
-    winsch(t_window, ch);
+  if (operation == OPERATION_INSERT) {
+    int row = max_rows - 1;
+    
+    for (; row >= cursor_y; row--) {
+      wmove(t_window, row, scr->terminal_x - 1);
+      char ch = winch(t_window);
+      wdelch(t_window);
+
+      wmove(t_window, row + 1, 0);
+      winsch(t_window, ch);
+    }
+    
+  } else if (operation == OPERATION_DELETE) {
+    int row = cursor_y;
+
+    for (; row < max_rows; row++) {
+      wmove(t_window, row + 1, 0);
+      char ch = winch(t_window);
+      wdelch(t_window);
+
+      wmove(t_window, row, scr->terminal_x - 1);
+      winsch(t_window, ch);
+    }
   }
 
   wmove(t_window, cursor_y, cursor_x);
