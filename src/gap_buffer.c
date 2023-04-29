@@ -130,6 +130,13 @@ void cursor_right(text_buffer* t_buffer, int offset) {
   }
 }
 
+void move_cursor_sof(text_buffer* t_buffer) {
+  char* front = t_buffer->buffer;
+  
+  while(t_buffer->gap_front != front)
+    cursor_left(t_buffer, 1);
+}
+
 // display
 // this function is only for debugging purposes
 void display_text_buffer(text_buffer* t_buffer) {

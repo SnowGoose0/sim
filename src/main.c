@@ -22,7 +22,7 @@ int main(void) {
     ch = getch();
 
     if (scr->mode == COMMAND_MODE)
-      handle_commands_inputs(scr, ch);
+      handle_commands_inputs(scr, text, ch);
     else
       handle_text_inputs(scr, text, ch);
   }
@@ -40,7 +40,7 @@ screen* init_screen() {
 
 }
 
-void handle_commands_inputs(screen* scr, int ch) {
+void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
   WINDOW* t_window = scr->t_window;
   WINDOW* c_window = scr->c_window;
   
@@ -48,6 +48,7 @@ void handle_commands_inputs(screen* scr, int ch) {
     case 'i':
       scr->mode = INSERT_MODE;
       wmove(t_window, 0, 0);
+      move_cursor_sof(text);
       wrefresh(t_window);
       break;
 

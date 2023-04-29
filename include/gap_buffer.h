@@ -15,6 +15,7 @@ char* get_debug_string(text_buffer* t_buffer);
 void insert_text_buffer(text_buffer* t_buffer, char symbol);
 void delete_text_buffer(text_buffer* t_buffer);
 void move_cursor(text_buffer* t_buffer, int position);
+void move_cursor_sof(text_buffer* t_buffer);
 void cursor_left(text_buffer* t_buffer, int offset);
 void cursor_right(text_buffer* t_buffer, int offset);
 int resize_gap(text_buffer* t_buffer);
