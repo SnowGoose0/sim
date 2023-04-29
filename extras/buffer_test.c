@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "gap_buffer.c"
+#include "../src/gap_buffer.c"
 
 void init_test();
 void insert_test();
@@ -100,6 +100,9 @@ void left_right_test() {
   insert_text_buffer(tb_1, 'D');
   insert_text_buffer(tb_1, 'X');
 
+  display_text_buffer(tb_1);
+
+  delete_text_buffer(tb_1);
   display_text_buffer(tb_1);
 
   free_text_buffer(tb_1);

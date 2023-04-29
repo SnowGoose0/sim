@@ -33,6 +33,13 @@ void insert_text_buffer(text_buffer* t_buffer, char symbol) {
   t_buffer->gap_front++;
 }
 
+// delete
+void delete_text_buffer(text_buffer* t_buffer) {
+  if (t_buffer->gap_front != t_buffer->buffer) {
+    t_buffer->gap_front--;
+  }
+}
+
 // move
 void move_cursor(text_buffer* t_buffer, int position) {
   int current_position = (int)(t_buffer->buffer - t_buffer->gap_front);
