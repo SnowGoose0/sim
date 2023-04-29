@@ -4,13 +4,36 @@
 void init_test();
 void insert_test();
 void left_right_test();
+void empty_insert();
 
 int main () {
-  init_test();
-  insert_test();
-  left_right_test();
-  
+  empty_insert();
   return 0;
+}
+
+void empty_insert() {
+  char* empty = "\0";
+
+  text_buffer* tb_1 = init_text_buffer(empty);
+  display_text_buffer(tb_1);
+
+  insert_text_buffer(tb_1, 'c');
+  display_text_buffer(tb_1);
+
+  insert_text_buffer(tb_1, 'c');
+  display_text_buffer(tb_1);
+
+  insert_text_buffer(tb_1, 'c');
+  display_text_buffer(tb_1);
+
+  insert_text_buffer(tb_1, 'c');
+  display_text_buffer(tb_1);
+
+  insert_text_buffer(tb_1, 'c');
+  display_text_buffer(tb_1);
+
+  insert_text_buffer(tb_1, 'i');
+  display_text_buffer(tb_1);  
 }
 
 void init_test() {

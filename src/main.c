@@ -15,6 +15,7 @@ int main(void) {
   noecho();
   
   screen* scr = init_screen();
+  text_buffer* text = init_text_buffer(EMPTY_FILE);
 
   // event loop
   while(1) {
@@ -23,7 +24,7 @@ int main(void) {
     if (scr->mode == COMMAND_MODE)
       handle_commands_inputs(scr, ch);
     else
-      handle_text_inputs(scr, ch);
+      handle_text_inputs(scr, text, ch);
   }
   
   kill();
@@ -33,6 +34,7 @@ screen* init_screen() {
   screen* new_screen = (screen*) malloc(sizeof(screen));
   new_screen->eof = 0;
   new_screen->mode = COMMAND_MODE;
+  
   render_window(new_screen);
   return new_screen;
 
@@ -58,8 +60,7 @@ void handle_commands_inputs(screen* scr, int ch) {
   }
 }
 
-
-void handle_text_inputs(screen* scr, int ch) {
+void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
   WINDOW* c_window = scr->c_window;
   WINDOW* t_window = scr->t_window;
   
@@ -101,17 +102,23 @@ void handle_text_inputs(screen* scr, int ch) {
       break;
 
     case KEY_ENTER:
+    case KEY_NEXT_LN:
       scr->eof++;
       
       wrefresh(t_window);
       break;
 
     default:
-      scr->eof++;
-      handle_line_wrap(scr, OPERATION_INSERT);
-      winsch(t_window, ch);
-      handle_cursor_movement(scr, MOVEMENT_FORWARD);
+      insert_character(ch, text, t_window, scr);
       wrefresh(t_window);
       break;
   }
+}
+
+void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
+  handle_line_wrap(scr, OPERATION_INSERT);
+  winsch(win, ch);
+  
+  handle_cursor_movement(scr, MOVEMENT_FORWARD);
+  insert_text_buffer(text, (char) ch);
 }

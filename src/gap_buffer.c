@@ -17,10 +17,16 @@ text_buffer* init_text_buffer(char* buffer) {
   new_buffer->gap_end = new_buffer->buffer + BUFF_GAP_SIZE;
   new_buffer->length = text_buffer_length;
 
-  strcpy(new_buffer->gap_end, buffer);
+  if (strcmp(buffer, "\0"))
+    strcpy(new_buffer->gap_end, buffer);
   
   return new_buffer;
 }
+
+void hello(text_buffer* t_buffer) {
+  text_buffer* t = t_buffer;
+  char* c = t_buffer->gap_front;
+};
 
 // insert
 void insert_text_buffer(text_buffer* t_buffer, char symbol) {
@@ -83,16 +89,19 @@ void cursor_right(text_buffer* t_buffer, int offset) {
 // grow
 // this function should only be called if gap size is 0
 int resize_gap(text_buffer* t_buffer) {
+  char* tmp = t_buffer->buffer;
+  
   int new_buffer_length = BUFF_GAP_SIZE + t_buffer->length;
   char* new_buffer = (char*) malloc(new_buffer_length*sizeof(char));
-
-  char* source_buffer = t_buffer->buffer;
-  char* split_position = t_buffer->gap_front;
+  
+  char* source_buffer = tmp;
+  
   int front_length = (int)(t_buffer->gap_front - source_buffer);
+  int back_length = (int)(t_buffer->buffer + t_buffer->length - t_buffer->gap_end);
   strncpy(new_buffer, source_buffer, front_length);
-  strcpy(new_buffer + front_length + BUFF_GAP_SIZE, split_position);
+  strncpy(new_buffer + front_length + BUFF_GAP_SIZE, t_buffer->gap_end, back_length);
 
-  free(t_buffer->buffer);
+  free(tmp);
   t_buffer->buffer = new_buffer;
   t_buffer->gap_front = new_buffer + front_length;
   t_buffer->gap_end = t_buffer->gap_front + BUFF_GAP_SIZE;
