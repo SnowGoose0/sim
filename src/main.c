@@ -86,11 +86,13 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
 
     case '-':
       handle_cursor_movement(scr, MOVEMENT_BACKWARD);
+      cursor_left(text, 1);
       wrefresh(t_window);
       break;
 
     case '=':
       handle_cursor_movement(scr, MOVEMENT_FORWARD);
+      cursor_right(text, 1);
       wrefresh(t_window);
       break;
 
@@ -107,6 +109,13 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       wrefresh(t_window);
       break;
 
+    case KEY_BTAB:
+    case '\t':
+      for (int i = 0; i < TAB_LENGTH; ++i)
+	insert_character(SPACE_CHAR, text, t_window, scr);
+      wrefresh(t_window);
+      break;
+   
     default:
       insert_character(ch, text, t_window, scr);
       wrefresh(t_window);
@@ -115,7 +124,7 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
 }
 
 void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
-  if (ch >= 32 && ch <= 126) {
+  if (LEGAL_CHAR_LOW <= ch && LEGAL_CHAR_UP >= ch) {
     handle_line_wrap(scr, OPERATION_INSERT);
     winsch(win, ch);
     handle_cursor_movement(scr, MOVEMENT_FORWARD);
