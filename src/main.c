@@ -79,6 +79,8 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
     case KEY_ESC:
       scr->mode = COMMAND_MODE;
       wmove(c_window, 0, 0);
+      wclear(c_window);
+      wprintw(c_window, "%s", get_debug_string(text));
       wrefresh(c_window);
       break;
 
@@ -95,16 +97,13 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
     case KEY_BACKSPACE:
     case 127:
     case '\b':
-      handle_cursor_movement(scr, MOVEMENT_BACKWARD);
-      wdelch(t_window);
-      handle_line_wrap(scr, OPERATION_DELETE);
+      delete_character(ch, text, t_window, scr);
       wrefresh(t_window);
       break;
 
     case KEY_ENTER:
     case KEY_NEXT_LN:
-      scr->eof++;
-      
+      insert_character('\n', text, t_window, scr);
       wrefresh(t_window);
       break;
 
@@ -116,9 +115,19 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
 }
 
 void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
-  handle_line_wrap(scr, OPERATION_INSERT);
-  winsch(win, ch);
+  if (ch >= 32 && ch <= 126) {
+    handle_line_wrap(scr, OPERATION_INSERT);
+    winsch(win, ch);
+    handle_cursor_movement(scr, MOVEMENT_FORWARD);
+  }
   
-  handle_cursor_movement(scr, MOVEMENT_FORWARD);
   insert_text_buffer(text, (char) ch);
+}
+
+void delete_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
+  handle_cursor_movement(scr, MOVEMENT_BACKWARD);
+  wdelch(win);
+  handle_line_wrap(scr, OPERATION_DELETE);
+
+  delete_text_buffer(text);
 }

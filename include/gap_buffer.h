@@ -1,7 +1,7 @@
 #ifndef GAP_BUFF_H
 #define GAP_BUFF_H
 
-#define BUFF_GAP_SIZE 5
+#define BUFF_GAP_SIZE 30
 
 typedef struct {
   char* buffer;
@@ -11,6 +11,7 @@ typedef struct {
 } text_buffer;
 
 text_buffer* init_text_buffer(char* buffer);
+char* get_debug_string(text_buffer* t_buffer);
 void insert_text_buffer(text_buffer* t_buffer, char symbol);
 void delete_text_buffer(text_buffer* t_buffer);
 void move_cursor(text_buffer* t_buffer, int position);
