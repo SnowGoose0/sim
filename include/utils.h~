@@ -1,0 +1,10 @@
+
+screen* init_screen();
+void kill();
+void render_window(screen* scr);
+void handle_commands_inputs(screen* scr, int ch);
+void handle_text_inputs(screen* scr, int ch);
+void handle_cursor_movement(screen* scr, int movement);
+void handle_line_wrap(screen* scr, int operation);
+void insert_ch(int ch);
+
