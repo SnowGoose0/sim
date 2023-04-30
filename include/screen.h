@@ -20,7 +20,7 @@
 
 #define TAB_LENGTH        0x04
 
-#define SPACE_CHAR        0x20
+#define SPACE_CHAR        0x20    
 #define LEGAL_CHAR_LOW    0x20
 #define LEGAL_CHAR_UP     0x7E
 

@@ -91,13 +91,13 @@ void left_right_test() {
 
   text_buffer* tb_1 = init_text_buffer(sample, 5);
 
-  cursor_right(tb_1, 1);
+  text_cursor_right(tb_1, 1);
   display_text_buffer(tb_1);
 
-  cursor_right(tb_1, 3);
+  text_cursor_right(tb_1, 3);
   display_text_buffer(tb_1);
 
-  cursor_left(tb_1, 1);
+  text_cursor_left(tb_1, 1);
   display_text_buffer(tb_1);
 
   insert_text_buffer(tb_1, 'A');
@@ -109,9 +109,9 @@ void left_right_test() {
   
   display_text_buffer(tb_1);
 
-  cursor_right(tb_1, 9);
+  text_cursor_right(tb_1, 9);
   display_text_buffer(tb_1);
-  cursor_right(tb_1, 9);
+  text_cursor_right(tb_1, 9);
   display_text_buffer(tb_1);
 
   insert_text_buffer(tb_1, 'E');
@@ -122,7 +122,7 @@ void left_right_test() {
 
   display_text_buffer(tb_1);
 
-  cursor_left(tb_1, 40);
+  text_cursor_left(tb_1, 40);
   insert_text_buffer(tb_1, 'F');
   display_text_buffer(tb_1);
 

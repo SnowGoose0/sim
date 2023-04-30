@@ -36,7 +36,7 @@ screen* init_screen() {
   new_screen->eof = 0;
   new_screen->mode = COMMAND_MODE;
   
-  render_window(new_screen);
+  init_window(new_screen);
   return new_screen;
 
 }
@@ -88,12 +88,12 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       break;
 
     case '-':
-      move_cursor_left(scr, text);
+      cursor_left(scr, text);
       wrefresh(t_window);
       break;
 
     case '=':
-      move_cursor_right(scr, text);
+      cursor_right(scr, text);
       wrefresh(t_window);
       break;
 
@@ -126,21 +126,21 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
   if (!display_buffer) free(display_buffer);
 }
 
-void move_cursor_left(screen* scr, text_buffer* text) {
+void cursor_left(screen* scr, text_buffer* text) {
   char ch = *(text->gap_front - 1);
 
-  if (ch != '\n') {
+  if (ch != LINE_FEED_CHAR) {
     handle_terminal_cursor(scr, MOVEMENT_BACKWARD);
-    cursor_left(text, 1);    
+    text_cursor_left(text, 1);    
   }
 }
 
-void move_cursor_right(screen* scr, text_buffer* text) {
+void cursor_right(screen* scr, text_buffer* text) {
   char ch = *text->gap_end;
 
-  if (!cursor_at_eof(text) && ch != '\n') {
+  if (!text_cursor_at_eof(text) && ch != LINE_FEED_CHAR) {
     handle_terminal_cursor(scr, MOVEMENT_FORWARD);
-    cursor_right(text, 1);    
+    text_cursor_right(text, 1);    
   }
 }
 
@@ -151,24 +151,24 @@ void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
     
     winsch(win, ch);
     handle_terminal_cursor(scr, movement);
-    handle_line_wrap(scr, text, operation);
+    handle_terminal_format(scr, text, operation);
   }
   
   insert_text_buffer(text, (char) ch);
 }
 
 void insert_next_line(text_buffer* text, WINDOW* win, screen* scr) {
-  handle_line_wrap(scr, text, OPERATION_NEXT_LN);
+  handle_terminal_format(scr, text, OPERATION_NEXT_LN);
   handle_terminal_cursor(scr, MOVEMENT_NEXT_LN);
-  insert_text_buffer(text, '\n');
+  insert_text_buffer(text, LINE_FEED_CHAR);
 }
 
 void delete_character(text_buffer* text, WINDOW* win, screen* scr) {
   char ch = *(text->gap_front - 1);
 
-  handle_terminal_cursor(scr, ch != '\n' ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN);
+  handle_terminal_cursor(scr, ch != LINE_FEED_CHAR ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN);
   wdelch(win);
-  handle_line_wrap(scr, text, OPERATION_DELETE);
+  handle_terminal_format(scr, text, OPERATION_DELETE);
 
   delete_text_buffer(text);
 }

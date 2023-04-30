@@ -36,7 +36,7 @@ void insert_text_buffer(text_buffer* t_buffer, char symbol) {
   *dest = symbol;
   t_buffer->gap_front++;
 
-  if (symbol == '\n' || t_buffer->terminal_x == t_buffer->cursor_offset) {
+  if (symbol == LINE_FEED_CHAR || t_buffer->terminal_x == t_buffer->cursor_offset) {
     t_buffer->cursor_offset = 0;
     t_buffer->cursor_line++;
   } else {
@@ -87,15 +87,15 @@ void move_cursor(text_buffer* t_buffer, int position) {
   int current_position = (int)(t_buffer->buffer - t_buffer->gap_front);
   
   if (position < current_position) {
-    cursor_left(t_buffer, position);
+    text_cursor_left(t_buffer, position);
     return;
   }
 
-  cursor_right(t_buffer, position);
+  text_cursor_right(t_buffer, position);
 }
 
 // left
-void cursor_left(text_buffer* t_buffer, int offset) {
+void text_cursor_left(text_buffer* t_buffer, int offset) {
   char* buffer_front = t_buffer->buffer;
   
   for (int cur = 0; cur < offset; cur++) {
@@ -109,7 +109,7 @@ void cursor_left(text_buffer* t_buffer, int offset) {
 }
 
 // right
-void cursor_right(text_buffer* t_buffer, int offset) {
+void text_cursor_right(text_buffer* t_buffer, int offset) {
   char* buffer_back = t_buffer->buffer + t_buffer-> length;
 
   for (int cur = 0; cur < offset; cur++) {
@@ -126,10 +126,10 @@ void move_cursor_sof(text_buffer* t_buffer) {
   char* front = t_buffer->buffer;
   
   while(t_buffer->gap_front != front)
-    cursor_left(t_buffer, 1);
+    text_cursor_left(t_buffer, 1);
 }
 
-int cursor_at_eof(text_buffer* t_buffer) {
+int text_cursor_at_eof(text_buffer* t_buffer) {
   if ((int) (t_buffer->gap_end - t_buffer->buffer) == t_buffer->length)
     return 1;
 
@@ -168,7 +168,7 @@ int next_break(text_buffer* t_buffer, int direction) {
 
   int count = 0;
 
-  while(*tmp != '\n' && *tmp != 0) {
+  while(*tmp != LINE_FEED_CHAR && *tmp != 0) {
     if (direction == SEARCH_DIRECTION_FORWARD) ++tmp;
     else --tmp;
     ++count;
@@ -197,7 +197,7 @@ char* get_debug_string(text_buffer* t_buffer) {
     char ch = *cur;
 
     if (ignore_bound_low <= cur && cur < ignore_bound_up) continue;
-    if (ch == '\n') ch = '&';
+    if (ch == LINE_FEED_CHAR) ch = '&';
  
     str[str_index] = ch;
     str_index++;
@@ -212,7 +212,7 @@ char* get_focused_string(text_buffer* t_buffer) {
   char* tmp = f_string;
 
   while(*tmp != 0) {
-    if (*tmp == '&') *tmp = '\n';
+    if (*tmp == '&') *tmp = LINE_FEED_CHAR;
     tmp++;
   }
 

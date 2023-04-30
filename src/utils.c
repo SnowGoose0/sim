@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "gap_buffer.h"
 
-void render_window(screen* scr) {
+void init_window(screen* scr) {
   int terminal_y, terminal_x;
   getmaxyx(stdscr, terminal_y, terminal_x);
 
@@ -41,17 +41,17 @@ void handle_terminal_cursor(screen* scr, int movement) {
       new_cursor_x = (cursor_x + 1) % scr->terminal_x;
     
       if (cursor_x == scr->terminal_x - 1)
-	new_cursor_y = MIN(scr->terminal_y, cursor_y + 1);
+	      new_cursor_y = MIN(scr->terminal_y, cursor_y + 1);
       
       break;
 
     case MOVEMENT_BACKWARD:
       new_cursor_x = cursor_x + cursor_y > 0
-	? MOD(cursor_x -1, scr->terminal_x)
-	: cursor_x;
+	      ? MOD(cursor_x -1, scr->terminal_x)
+	      : cursor_x;
       
       if (cursor_x == 0)
-	new_cursor_y = MAX(0, cursor_y - 1);
+	      new_cursor_y = MAX(0, cursor_y - 1);
       
       break;
 
@@ -73,29 +73,32 @@ void handle_terminal_cursor(screen* scr, int movement) {
   wmove(t_window, new_cursor_y, new_cursor_x);
 }
 
-void handle_line_wrap(screen* scr, text_buffer* text, int operation) {
+void handle_terminal_format(screen* scr, text_buffer* text, int operation) {
   WINDOW* t_window = scr->t_window;
 
   int cursor_y, cursor_x;
   getyx(t_window, cursor_y, cursor_x);
 
   char* focused_string = get_focused_string(text);
-
+  char* bottom_string = focused_string + (text->gap_front - text->buffer);
+  char* format_string;
+  
+  wclrtobot(t_window);
   switch(operation) {
     case OPERATION_INSERT:
     case OPERATION_DELETE:
-      wclrtobot(t_window);
-      wprintw(t_window, "%s", focused_string + (text->gap_front - text->buffer));
+      format_string = "%s";
       break;
 
     case OPERATION_NEXT_LN:
-      wclrtobot(t_window);
-      wprintw(t_window, "\n%s", focused_string + (text->gap_front - text->buffer));
+      format_string = "\n%s";
       break;
 
-    default:      
+    default:
+      format_string = NULL;
   }
-  
+
+  wprintw(t_window, format_string, bottom_string); 
   wmove(t_window, cursor_y, cursor_x);
   free(focused_string);
 }
