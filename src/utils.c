@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "utils.h"
+#include "gap_buffer.h"
 
 void render_window(screen* scr) {
   int terminal_y, terminal_x;
@@ -59,6 +60,10 @@ void handle_cursor_movement(screen* scr, int movement) {
       new_cursor_x = 0;
       break;
 
+    case MOVEMENT_PREV_LN:
+      new_cursor_y = 0;
+      new_cursor_x = 0;
+
     default:
       new_cursor_y = cursor_y;
       new_cursor_x = cursor_x;
@@ -68,42 +73,31 @@ void handle_cursor_movement(screen* scr, int movement) {
   wmove(t_window, new_cursor_y, new_cursor_x);
 }
 
-void handle_line_wrap(screen* scr, int operation) {
+void handle_line_wrap(screen* scr, text_buffer* text, int operation) {
   WINDOW* t_window = scr->t_window;
-  
-  int max_rows = scr->terminal_y;
+
   int cursor_y, cursor_x;
-  getyx(scr->t_window, cursor_y, cursor_x);
+  getyx(t_window, cursor_y, cursor_x);
 
-  if (operation == OPERATION_INSERT) {
-    int row = max_rows - 1;
-    
-    for (; row >= cursor_y; row--) {
-      wmove(t_window, row, scr->terminal_x - 1);
-      char ch = winch(t_window);
-      wdelch(t_window);
+  char* focused_string = get_focused_string(text);
 
-      wmove(t_window, row + 1, 0);
-      winsch(t_window, ch);
-    }
-    
-  } else if (operation == OPERATION_DELETE) {
-    int row = cursor_y;
+  switch(operation) {
+    case OPERATION_INSERT:
+    case OPERATION_DELETE:
+      wclrtobot(t_window);
+      wprintw(t_window, "%s", focused_string + (text->gap_front - text->buffer));
+      break;
 
-    for (; row < max_rows; row++) {
-      wmove(t_window, row + 1, 0);
-      char ch = winch(t_window);
-      wdelch(t_window);
+    case OPERATION_NEXT_LN:
+      wclrtobot(t_window);
+      wprintw(t_window, "\n%s", focused_string + (text->gap_front - text->buffer));
+      break;
 
-      wmove(t_window, row, scr->terminal_x - 1);
-      winsch(t_window, ch);
-    }
-
-  } else if (operation == OPERATION_NEXT_LN) {
-    
+    default:      
   }
-
+  
   wmove(t_window, cursor_y, cursor_x);
+  free(focused_string);
 }
 
 void kill() {

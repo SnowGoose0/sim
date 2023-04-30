@@ -14,7 +14,7 @@ int main () {
 void empty_insert() {
   char* empty = "\0";
 
-  text_buffer* tb_1 = init_text_buffer(empty);
+  text_buffer* tb_1 = init_text_buffer(empty, 5);
   display_text_buffer(tb_1);
 
   insert_text_buffer(tb_1, 'c');
@@ -26,14 +26,24 @@ void empty_insert() {
   insert_text_buffer(tb_1, 'c');
   display_text_buffer(tb_1);
 
-  insert_text_buffer(tb_1, 'c');
+  insert_text_buffer(tb_1, '\n');
   display_text_buffer(tb_1);
 
-  insert_text_buffer(tb_1, 'c');
+  insert_text_buffer(tb_1, '\n');
   display_text_buffer(tb_1);
 
   insert_text_buffer(tb_1, 'i');
+  display_text_buffer(tb_1);
+
+  delete_text_buffer(tb_1);
+  display_text_buffer(tb_1);
+
+  for (int i = 0; i < 6; i++) {
+    
+  delete_text_buffer(tb_1);
   display_text_buffer(tb_1);  
+  }
+
 }
 
 void init_test() {
@@ -41,13 +51,13 @@ void init_test() {
   char* sample_2 = "C";
   char* sample_3 = "\0";
 
-  text_buffer* tb_1 = init_text_buffer(sample_1);
+  text_buffer* tb_1 = init_text_buffer(sample_1, 5);
   display_text_buffer(tb_1);
 
-  text_buffer* tb_2 = init_text_buffer(sample_2);
+  text_buffer* tb_2 = init_text_buffer(sample_2, 5);
   display_text_buffer(tb_2);
 
-  text_buffer* tb_3 = init_text_buffer(sample_3);
+  text_buffer* tb_3 = init_text_buffer(sample_3, 5);
   display_text_buffer(tb_3);
 
   free_text_buffer(tb_1);
@@ -58,7 +68,7 @@ void init_test() {
 void insert_test() {
   char* sample_1 = "Hello World!";
 
-  text_buffer* tb_1 = init_text_buffer(sample_1);
+  text_buffer* tb_1 = init_text_buffer(sample_1, 5);
   display_text_buffer(tb_1);
 
   insert_text_buffer(tb_1, 'B');
@@ -79,7 +89,7 @@ void insert_test() {
 void left_right_test() {
   char* sample = "Hello World!";
 
-  text_buffer* tb_1 = init_text_buffer(sample);
+  text_buffer* tb_1 = init_text_buffer(sample, 5);
 
   cursor_right(tb_1, 1);
   display_text_buffer(tb_1);

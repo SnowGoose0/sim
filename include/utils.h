@@ -12,6 +12,6 @@
 void kill();
 void render_window(screen* scr);
 void handle_cursor_movement(screen* scr, int movement);
-void handle_line_wrap(screen* scr, int operation);
+void handle_line_wrap(screen* scr, text_buffer* text, int operation);
 
 #endif

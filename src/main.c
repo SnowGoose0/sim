@@ -16,7 +16,7 @@ int main(void) {
   noecho();
   
   screen* scr = init_screen();
-  text_buffer* text = init_text_buffer(EMPTY_FILE);
+  text_buffer* text = init_text_buffer(EMPTY_FILE, scr->terminal_x);
 
   // event loop
   while(1) {
@@ -43,7 +43,7 @@ screen* init_screen() {
 
 void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
   WINDOW* t_window = scr->t_window;
-  WINDOW* c_window = scr->c_window;
+  // WINDOW* c_window = scr->c_window;
   
   switch(ch) {    
     case 'i':
@@ -88,31 +88,25 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       break;
 
     case '-':
-      handle_cursor_movement(scr, MOVEMENT_BACKWARD);
-      cursor_left(text, 1);
+      move_cursor_left(scr, text);
       wrefresh(t_window);
       break;
 
     case '=':
-      handle_cursor_movement(scr, MOVEMENT_FORWARD);
-      cursor_right(text, 1);
+      move_cursor_right(scr, text);
       wrefresh(t_window);
       break;
 
     case KEY_BACKSPACE:
     case 127:
     case '\b':
-      delete_character(ch, text, t_window, scr);
+      delete_character(text, t_window, scr);
       wrefresh(t_window);
       break;
 
     case KEY_ENTER:
     case KEY_NEXT_LN:
-      insert_character('\n', text, t_window, scr);
-      handle_cursor_movement(scr, MOVEMENT_NEXT_LN);
-      wclear(t_window);
-      display_buffer = get_focused_string(text);
-      mvwprintw(t_window, 0, 0, "%s", display_buffer);
+      insert_next_line(text, t_window, scr);
       wrefresh(t_window);
       break;
 
@@ -132,20 +126,49 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
   if (!display_buffer) free(display_buffer);
 }
 
+void move_cursor_left(screen* scr, text_buffer* text) {
+  char ch = *(text->gap_front - 1);
+
+  if (ch != '\n') {
+    handle_cursor_movement(scr, MOVEMENT_BACKWARD);
+    cursor_left(text, 1);    
+  }
+}
+
+void move_cursor_right(screen* scr, text_buffer* text) {
+  char ch = *text->gap_end;
+
+  if (!cursor_at_eof(text) && ch != '\n') {
+    handle_cursor_movement(scr, MOVEMENT_FORWARD);
+    cursor_right(text, 1);    
+  }
+}
+
 void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
   if (LEGAL_CHAR_LOW <= ch && LEGAL_CHAR_UP >= ch) {
-    handle_line_wrap(scr, OPERATION_INSERT);
+    int operation = OPERATION_INSERT;
+    int movement = MOVEMENT_FORWARD;
+    
     winsch(win, ch);
-    handle_cursor_movement(scr, MOVEMENT_FORWARD);
+    handle_cursor_movement(scr, movement);
+    handle_line_wrap(scr, text, operation);
   }
   
   insert_text_buffer(text, (char) ch);
 }
 
-void delete_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
-  handle_cursor_movement(scr, MOVEMENT_BACKWARD);
+void insert_next_line(text_buffer* text, WINDOW* win, screen* scr) {
+  handle_line_wrap(scr, text, OPERATION_NEXT_LN);
+  handle_cursor_movement(scr, MOVEMENT_NEXT_LN);
+  insert_text_buffer(text, '\n');
+}
+
+void delete_character(text_buffer* text, WINDOW* win, screen* scr) {
+  char ch = *(text->gap_front - 1);
+
+  handle_cursor_movement(scr, ch != '\n' ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN);
   wdelch(win);
-  handle_line_wrap(scr, OPERATION_DELETE);
+  handle_line_wrap(scr, text, OPERATION_DELETE);
 
   delete_text_buffer(text);
 }

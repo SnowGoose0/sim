@@ -7,7 +7,7 @@
 // init
 // gap_front points to the first _
 // gap_end points to the first char after the last _
-text_buffer* init_text_buffer(char* buffer) {
+text_buffer* init_text_buffer(char* buffer, int terminal_x) {
   int buffer_length = strlen(buffer);
   int text_buffer_length = buffer_length + BUFF_GAP_SIZE;
 
@@ -16,50 +16,14 @@ text_buffer* init_text_buffer(char* buffer) {
   new_buffer->gap_front = new_buffer->buffer;
   new_buffer->gap_end = new_buffer->buffer + BUFF_GAP_SIZE;
   new_buffer->length = text_buffer_length;
+  new_buffer->cursor_line = 0;
+  new_buffer->cursor_offset = 0;
+  new_buffer->terminal_x = terminal_x;
 
   if (strcmp(buffer, "\0"))
     strcpy(new_buffer->gap_end, buffer);
   
   return new_buffer;
-}
-
-char* get_debug_string(text_buffer* t_buffer) {
-  int len = t_buffer->length + 1;
-  char* buffer = t_buffer->buffer;
-  char* str = (char*) malloc(len * sizeof(char));
-
-  char* ignore_bound_low = t_buffer->gap_front;
-  char* ignore_bound_up = t_buffer->gap_end;
-
-  int str_index = 0;
-  for(int i = 0; i < len; i++) {
-    char* cur = buffer + i;
-    char ch = *cur;
-
-    if (ignore_bound_low <= cur && cur < ignore_bound_up) {
-
-    }
-    if (ch == '\n') ch = '&';
- 
-    str[str_index] = ch;
-    str_index++;
-  }
-
-  *(str + str_index) = 0;
-  *(str + str_index) = 0;
-  return str;
-}
-
-char* get_focused_string(text_buffer* t_buffer) {
-  char* f_string = get_debug_string(t_buffer);
-  char* tmp = f_string;
-
-  while(*tmp != 0) {
-    if (*tmp == '&') *tmp = '\n';
-    tmp++;
-  }
-
-  return f_string;
 }
 
 // insert
@@ -71,14 +35,26 @@ void insert_text_buffer(text_buffer* t_buffer, char symbol) {
   char* dest = t_buffer->gap_front;
   *dest = symbol;
   t_buffer->gap_front++;
-  t_buffer->length++;
+
+  if (symbol == '\n' || t_buffer->terminal_x == t_buffer->cursor_offset) {
+    t_buffer->cursor_offset = 0;
+    t_buffer->cursor_line++;
+  } else {
+    t_buffer->cursor_offset++;
+  }
 }
 
 // delete
 void delete_text_buffer(text_buffer* t_buffer) {
   if (t_buffer->buffer != t_buffer->gap_front) {
     t_buffer->gap_front--;
-    t_buffer->length--;
+
+    if (t_buffer->cursor_offset == 0 && t_buffer->cursor_line != 0) {
+      t_buffer->cursor_offset = next_break(t_buffer, SEARCH_DIRECTION_BACKWARD);
+      t_buffer->cursor_line--;
+      
+    } else t_buffer->cursor_offset--;
+     
   }
 }
 
@@ -153,6 +129,13 @@ void move_cursor_sof(text_buffer* t_buffer) {
     cursor_left(t_buffer, 1);
 }
 
+int cursor_at_eof(text_buffer* t_buffer) {
+  if ((int) (t_buffer->gap_end - t_buffer->buffer) == t_buffer->length)
+    return 1;
+
+  return 0;
+}
+
 // display
 // this function is only for debugging purposes
 void display_text_buffer(text_buffer* t_buffer) {
@@ -160,6 +143,7 @@ void display_text_buffer(text_buffer* t_buffer) {
   int is_gap = 0;
 
   printf("Buffer Length: %d\n", t_buffer->length);
+  printf("Cursor: Line %d, Offset, %d\n", t_buffer->cursor_line, t_buffer->cursor_offset);
 
   for (int i = 0; i < t_buffer->length; i++) {
     if (buffer + i == t_buffer->gap_front) is_gap = 1;
@@ -176,8 +160,61 @@ void display_text_buffer(text_buffer* t_buffer) {
   printf("\n\n");
 }
 
+int next_break(text_buffer* t_buffer, int direction) {
+  char* tmp;
+  
+  if (direction == SEARCH_DIRECTION_FORWARD) tmp = t_buffer->gap_end;
+  else tmp = t_buffer->gap_front - 1;
+
+  int count = 0;
+
+  while(*tmp != '\n' && *tmp != 0) {
+    if (direction == SEARCH_DIRECTION_FORWARD) ++tmp;
+    else --tmp;
+    ++count;
+  }
+
+  return count;
+}
+
 // free
 void free_text_buffer(text_buffer* t_buffer) {
   free(t_buffer->buffer);
   free(t_buffer);
+}
+
+char* get_debug_string(text_buffer* t_buffer) {
+  int len = t_buffer->length + 1;
+  char* buffer = t_buffer->buffer;
+  char* str = (char*) malloc(len * sizeof(char));
+
+  char* ignore_bound_low = t_buffer->gap_front;
+  char* ignore_bound_up = t_buffer->gap_end;
+
+  int str_index = 0;
+  for(int i = 0; i < len; i++) {
+    char* cur = buffer + i;
+    char ch = *cur;
+
+    if (ignore_bound_low <= cur && cur < ignore_bound_up) continue;
+    if (ch == '\n') ch = '&';
+ 
+    str[str_index] = ch;
+    str_index++;
+  }
+
+  *(str + str_index) = 0;
+  return str;
+}
+
+char* get_focused_string(text_buffer* t_buffer) {
+  char* f_string = get_debug_string(t_buffer);
+  char* tmp = f_string;
+
+  while(*tmp != 0) {
+    if (*tmp == '&') *tmp = '\n';
+    tmp++;
+  }
+
+  return f_string;
 }

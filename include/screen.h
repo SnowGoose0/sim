@@ -11,6 +11,7 @@
 #define MOVEMENT_FORWARD  0x45
 #define MOVEMENT_BACKWARD 0x55
 #define MOVEMENT_NEXT_LN  0x65
+#define MOVEMENT_PREV_LN  0x75
 #define MOVEMENT_UP       0x85
 #define MOVEMENT_DOWN     0x95
 
