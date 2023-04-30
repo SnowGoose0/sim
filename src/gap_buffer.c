@@ -28,22 +28,38 @@ char* get_debug_string(text_buffer* t_buffer) {
   char* buffer = t_buffer->buffer;
   char* str = (char*) malloc(len * sizeof(char));
 
-  long int ignore_bound_low = (long int) t_buffer->gap_front;
-  long int ignore_bound_up = (long int) t_buffer->gap_end;
+  char* ignore_bound_low = t_buffer->gap_front;
+  char* ignore_bound_up = t_buffer->gap_end;
 
   int str_index = 0;
   for(int i = 0; i < len; i++) {
-    long int cur = (long int) buffer + i;
-    char ch = buffer[i];
+    char* cur = buffer + i;
+    char ch = *cur;
 
-    if (ignore_bound_low <= cur && cur < ignore_bound_up) continue;
+    if (ignore_bound_low <= cur && cur < ignore_bound_up) {
+
+    }
     if (ch == '\n') ch = '&';
  
     str[str_index] = ch;
     str_index++;
   }
+
+  *(str + str_index) = 0;
   *(str + str_index) = 0;
   return str;
+}
+
+char* get_focused_string(text_buffer* t_buffer) {
+  char* f_string = get_debug_string(t_buffer);
+  char* tmp = f_string;
+
+  while(*tmp != 0) {
+    if (*tmp == '&') *tmp = '\n';
+    tmp++;
+  }
+
+  return f_string;
 }
 
 // insert

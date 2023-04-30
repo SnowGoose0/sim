@@ -12,6 +12,7 @@ typedef struct {
 
 text_buffer* init_text_buffer(char* buffer);
 char* get_debug_string(text_buffer* t_buffer);
+char* get_focused_string(text_buffer* t_buffer);
 void insert_text_buffer(text_buffer* t_buffer, char symbol);
 void delete_text_buffer(text_buffer* t_buffer);
 void move_cursor(text_buffer* t_buffer, int position);

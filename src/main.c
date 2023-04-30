@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <ncurses.h>
 
 #include "main.h"
@@ -64,6 +65,7 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
 void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
   WINDOW* c_window = scr->c_window;
   WINDOW* t_window = scr->t_window;
+  char* display_buffer = NULL;
   
   int cursor_y, cursor_x;
   getyx(scr->t_window, cursor_y, cursor_x);
@@ -107,6 +109,10 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
     case KEY_ENTER:
     case KEY_NEXT_LN:
       insert_character('\n', text, t_window, scr);
+      handle_cursor_movement(scr, MOVEMENT_NEXT_LN);
+      wclear(t_window);
+      display_buffer = get_focused_string(text);
+      mvwprintw(t_window, 0, 0, "%s", display_buffer);
       wrefresh(t_window);
       break;
 
@@ -122,6 +128,8 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       wrefresh(t_window);
       break;
   }
+
+  if (!display_buffer) free(display_buffer);
 }
 
 void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
