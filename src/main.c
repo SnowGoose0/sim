@@ -130,7 +130,7 @@ void move_cursor_left(screen* scr, text_buffer* text) {
   char ch = *(text->gap_front - 1);
 
   if (ch != '\n') {
-    handle_cursor_movement(scr, MOVEMENT_BACKWARD);
+    handle_terminal_cursor(scr, MOVEMENT_BACKWARD);
     cursor_left(text, 1);    
   }
 }
@@ -139,7 +139,7 @@ void move_cursor_right(screen* scr, text_buffer* text) {
   char ch = *text->gap_end;
 
   if (!cursor_at_eof(text) && ch != '\n') {
-    handle_cursor_movement(scr, MOVEMENT_FORWARD);
+    handle_terminal_cursor(scr, MOVEMENT_FORWARD);
     cursor_right(text, 1);    
   }
 }
@@ -150,7 +150,7 @@ void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
     int movement = MOVEMENT_FORWARD;
     
     winsch(win, ch);
-    handle_cursor_movement(scr, movement);
+    handle_terminal_cursor(scr, movement);
     handle_line_wrap(scr, text, operation);
   }
   
@@ -159,14 +159,14 @@ void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
 
 void insert_next_line(text_buffer* text, WINDOW* win, screen* scr) {
   handle_line_wrap(scr, text, OPERATION_NEXT_LN);
-  handle_cursor_movement(scr, MOVEMENT_NEXT_LN);
+  handle_terminal_cursor(scr, MOVEMENT_NEXT_LN);
   insert_text_buffer(text, '\n');
 }
 
 void delete_character(text_buffer* text, WINDOW* win, screen* scr) {
   char ch = *(text->gap_front - 1);
 
-  handle_cursor_movement(scr, ch != '\n' ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN);
+  handle_terminal_cursor(scr, ch != '\n' ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN);
   wdelch(win);
   handle_line_wrap(scr, text, OPERATION_DELETE);
 

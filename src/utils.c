@@ -28,7 +28,7 @@ void render_window(screen* scr) {
   scr->terminal_x = terminal_x;
 }
 
-void handle_cursor_movement(screen* scr, int movement) {
+void handle_terminal_cursor(screen* scr, int movement) {
   WINDOW* t_window = scr->t_window;
   
   int cursor_y, cursor_x, new_cursor_y, new_cursor_x;
