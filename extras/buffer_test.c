@@ -26,6 +26,15 @@ void empty_insert() {
   insert_text_buffer(tb_1, 'c');
   display_text_buffer(tb_1);
 
+  insert_text_buffer(tb_1, 'c');
+  display_text_buffer(tb_1);
+
+  insert_text_buffer(tb_1, 'c');
+  display_text_buffer(tb_1);
+
+  insert_text_buffer(tb_1, 'c');
+  display_text_buffer(tb_1);
+
   insert_text_buffer(tb_1, '\n');
   display_text_buffer(tb_1);
 

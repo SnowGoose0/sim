@@ -36,7 +36,7 @@ void insert_text_buffer(text_buffer* t_buffer, char symbol) {
   *dest = symbol;
   t_buffer->gap_front++;
 
-  if (symbol == LINE_FEED_CHAR || t_buffer->terminal_x == t_buffer->cursor_offset) {
+  if (symbol == LINE_FEED_CHAR || t_buffer->terminal_x - 1 == t_buffer->cursor_offset) {
     t_buffer->cursor_offset = 0;
     t_buffer->cursor_line++;
   } else {
@@ -50,7 +50,7 @@ void delete_text_buffer(text_buffer* t_buffer) {
     t_buffer->gap_front--;
 
     if (t_buffer->cursor_offset == 0 && t_buffer->cursor_line != 0) {
-      t_buffer->cursor_offset = next_break(t_buffer, SEARCH_DIRECTION_BACKWARD);
+      t_buffer->cursor_offset = next_break(t_buffer, SEARCH_DIRECTION_BACKWARD) % t_buffer->terminal_x;
       t_buffer->cursor_line--;
       
     } else t_buffer->cursor_offset--;
@@ -150,7 +150,9 @@ void display_text_buffer(text_buffer* t_buffer) {
     if (buffer + i == t_buffer->gap_end) is_gap = 0;
     
     if (!is_gap) {
-      printf("%c ", *(buffer + i));
+      char ch = *(buffer + i);
+      if (ch == '\n') ch = '&';
+      printf("%c ", ch);
       continue;
     }
 
@@ -162,11 +164,10 @@ void display_text_buffer(text_buffer* t_buffer) {
 
 int next_break(text_buffer* t_buffer, int direction) {
   char* tmp;
+  int count = 0;
   
   if (direction == SEARCH_DIRECTION_FORWARD) tmp = t_buffer->gap_end;
   else tmp = t_buffer->gap_front - 1;
-
-  int count = 0;
 
   while(*tmp != LINE_FEED_CHAR && *tmp != 0) {
     if (direction == SEARCH_DIRECTION_FORWARD) ++tmp;

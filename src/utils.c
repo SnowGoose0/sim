@@ -28,7 +28,7 @@ void init_window(screen* scr) {
   scr->terminal_x = terminal_x;
 }
 
-void handle_terminal_cursor(screen* scr, int movement) {
+void handle_terminal_cursor(screen* scr, text_buffer* text, int movement) {
   WINDOW* t_window = scr->t_window;
   
   int cursor_y, cursor_x, new_cursor_y, new_cursor_x;
@@ -42,7 +42,6 @@ void handle_terminal_cursor(screen* scr, int movement) {
     
       if (cursor_x == scr->terminal_x - 1)
 	      new_cursor_y = MIN(scr->terminal_y, cursor_y + 1);
-      
       break;
 
     case MOVEMENT_BACKWARD:
@@ -52,7 +51,6 @@ void handle_terminal_cursor(screen* scr, int movement) {
       
       if (cursor_x == 0)
 	      new_cursor_y = MAX(0, cursor_y - 1);
-      
       break;
 
     case MOVEMENT_NEXT_LN:
@@ -61,13 +59,13 @@ void handle_terminal_cursor(screen* scr, int movement) {
       break;
 
     case MOVEMENT_PREV_LN:
-      new_cursor_y = 0;
-      new_cursor_x = 0;
+      new_cursor_y = MAX(0, cursor_y - 1);
+      new_cursor_x = text->cursor_offset;
+      break;
 
     default:
       new_cursor_y = cursor_y;
       new_cursor_x = cursor_x;
-      break;
   }
 
   wmove(t_window, new_cursor_y, new_cursor_x);

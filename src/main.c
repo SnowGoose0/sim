@@ -106,7 +106,7 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
 
     case KEY_ENTER:
     case KEY_NEXT_LN:
-      insert_next_line(text, t_window, scr);
+      insert_next_line(text, scr);
       wrefresh(t_window);
       break;
 
@@ -130,7 +130,7 @@ void cursor_left(screen* scr, text_buffer* text) {
   char ch = *(text->gap_front - 1);
 
   if (ch != LINE_FEED_CHAR) {
-    handle_terminal_cursor(scr, MOVEMENT_BACKWARD);
+    handle_terminal_cursor(scr, text, MOVEMENT_BACKWARD);
     text_cursor_left(text, 1);    
   }
 }
@@ -139,7 +139,7 @@ void cursor_right(screen* scr, text_buffer* text) {
   char ch = *text->gap_end;
 
   if (!text_cursor_at_eof(text) && ch != LINE_FEED_CHAR) {
-    handle_terminal_cursor(scr, MOVEMENT_FORWARD);
+    handle_terminal_cursor(scr, text, MOVEMENT_FORWARD);
     text_cursor_right(text, 1);    
   }
 }
@@ -149,26 +149,24 @@ void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
     int operation = OPERATION_INSERT;
     int movement = MOVEMENT_FORWARD;
     
+    insert_text_buffer(text, (char) ch);
     winsch(win, ch);
-    handle_terminal_cursor(scr, movement);
+    handle_terminal_cursor(scr, text, movement);
     handle_terminal_format(scr, text, operation);
   }
-  
-  insert_text_buffer(text, (char) ch);
 }
 
-void insert_next_line(text_buffer* text, WINDOW* win, screen* scr) {
-  handle_terminal_format(scr, text, OPERATION_NEXT_LN);
-  handle_terminal_cursor(scr, MOVEMENT_NEXT_LN);
+void insert_next_line(text_buffer* text, screen* scr) {
   insert_text_buffer(text, LINE_FEED_CHAR);
+  handle_terminal_format(scr, text, OPERATION_NEXT_LN);
+  handle_terminal_cursor(scr, text, MOVEMENT_NEXT_LN);
 }
 
 void delete_character(text_buffer* text, WINDOW* win, screen* scr) {
   char ch = *(text->gap_front - 1);
 
-  handle_terminal_cursor(scr, ch != LINE_FEED_CHAR ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN);
+  delete_text_buffer(text);
+  handle_terminal_cursor(scr, text, ch != LINE_FEED_CHAR ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN);
   wdelch(win);
   handle_terminal_format(scr, text, OPERATION_DELETE);
-
-  delete_text_buffer(text);
 }

@@ -12,7 +12,7 @@
 void kill();
 void init_window(screen* scr);
 
-void handle_terminal_cursor(screen* scr, int movement);
+void handle_terminal_cursor(screen* scr, text_buffer* text, int movement);
 void handle_terminal_format(screen* scr, text_buffer* text, int operation);
 
 #endif
