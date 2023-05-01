@@ -23,7 +23,6 @@ void init_render_window(screen* scr) {
   print_attr(boundary + 1, text_window, COLOR_PAIR(THEME_BOUNDARY));
 
   wmove(command_window, 0, 0);
-  box(command_window, 0, 0);
   wrefresh(command_window);
 
   scr->t_window = text_window;
