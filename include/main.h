@@ -6,7 +6,7 @@
 #include "screen.h"
 #include "gap_buffer.h"
 
-#define EMPTY_FILE "\0"
+#define EMPTY_FILE             "\0"
 
 screen* init_screen();
 

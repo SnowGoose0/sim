@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "random": "c",
+        "termio.h": "c",
+        "termios.h": "c"
+    }
+}

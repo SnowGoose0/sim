@@ -1,12 +1,12 @@
 #ifndef GAP_BUFF_H
 #define GAP_BUFF_H
 
-#define BUFF_GAP_SIZE 30
+#define BUFF_GAP_SIZE                  0x20
 
-#define LINE_FEED_CHAR 0x0A
+#define LINE_FEED_CHAR                 0x0A 
 
-#define SEARCH_DIRECTION_FORWARD 0x10
-#define SEARCH_DIRECTION_BACKWARD 0x15
+#define SEARCH_DIRECTION_FORWARD       0x10
+#define SEARCH_DIRECTION_BACKWARD      0x15
 
 typedef struct {
   char* buffer;

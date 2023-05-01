@@ -6,17 +6,26 @@
 
 #include "main.h"
 #include "utils.h"
+#include "colors.h"
 #include "gap_buffer.h"
 
 int main(void) {
   int ch = 0;
   
   initscr();
+  start_color();
   mousemask(0, NULL);
   noecho();
+  raw();
+
+  init_pair(THEME_BOUNDARY, COLOR_GREEN, COLOR_BLACK);
+  init_pair(THEME_WINDOW, COLOR_WHITE, COLOR_BLACK);
   
   screen* scr = init_screen();
   text_buffer* text = init_text_buffer(EMPTY_FILE, scr->terminal_x);
+
+  wbkgd(scr->t_window, COLOR_PAIR(THEME_WINDOW));
+  wbkgd(scr->c_window, COLOR_PAIR(THEME_WINDOW));
 
   // event loop
   while(1) {
