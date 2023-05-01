@@ -12,7 +12,7 @@ text_buffer* init_text_buffer(char* buffer, int terminal_x) {
   int text_buffer_length = buffer_length + BUFF_GAP_SIZE;
 
   text_buffer* new_buffer = (text_buffer*) malloc(sizeof(text_buffer));
-  new_buffer->buffer = (char*) malloc(text_buffer_length * sizeof(char));
+  new_buffer->buffer = (char*) calloc(text_buffer_length, sizeof(char));
   new_buffer->gap_front = new_buffer->buffer;
   new_buffer->gap_end = new_buffer->buffer + BUFF_GAP_SIZE;
   new_buffer->length = text_buffer_length;
@@ -64,7 +64,7 @@ int resize_gap(text_buffer* t_buffer) {
   char* tmp = t_buffer->buffer;
   
   int new_buffer_length = BUFF_GAP_SIZE + t_buffer->length;
-  char* new_buffer = (char*) malloc(new_buffer_length*sizeof(char));
+  char* new_buffer = (char*) calloc(new_buffer_length, sizeof(char));
   
   char* source_buffer = tmp;
   
@@ -187,7 +187,7 @@ void free_text_buffer(text_buffer* t_buffer) {
 char* get_debug_string(text_buffer* t_buffer) {
   int len = t_buffer->length + 1;
   char* buffer = t_buffer->buffer;
-  char* str = (char*) malloc(len * sizeof(char));
+  char* str = (char*) calloc(len, sizeof(char));
 
   char* ignore_bound_low = t_buffer->gap_front;
   char* ignore_bound_up = t_buffer->gap_end;

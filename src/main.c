@@ -36,21 +36,26 @@ screen* init_screen() {
   new_screen->eof = 0;
   new_screen->mode = COMMAND_MODE;
   
-  init_window(new_screen);
+  init_render_window(new_screen);
   return new_screen;
 
 }
 
 void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
   WINDOW* t_window = scr->t_window;
-  // WINDOW* c_window = scr->c_window;
+  WINDOW* c_window = scr->c_window;
   
   switch(ch) {    
     case 'i':
       scr->mode = INSERT_MODE;
+      werase(c_window);
+      print_attr("[ INSERT ]", c_window, A_BOLD);
+      wrefresh(c_window);
+
       wmove(t_window, 0, 0);
       move_cursor_sof(text);
       wrefresh(t_window);
+
       break;
 
     case 'q':
@@ -113,7 +118,7 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
     case KEY_BTAB:
     case '\t':
       for (int i = 0; i < TAB_LENGTH; ++i)
-	insert_character(SPACE_CHAR, text, t_window, scr);
+	      insert_character(SPACE_CHAR, text, t_window, scr);
       wrefresh(t_window);
       break;
    

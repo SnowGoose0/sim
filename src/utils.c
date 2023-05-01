@@ -3,7 +3,7 @@
 #include "utils.h"
 #include "gap_buffer.h"
 
-void init_window(screen* scr) {
+void init_render_window(screen* scr) {
   int terminal_y, terminal_x;
   getmaxyx(stdscr, terminal_y, terminal_x);
 
@@ -26,6 +26,8 @@ void init_window(screen* scr) {
   scr->c_window = command_window;
   scr->terminal_y = terminal_y;
   scr->terminal_x = terminal_x;
+  
+  print_boundaries(-1, scr->terminal_y);
 }
 
 void handle_terminal_cursor(screen* scr, text_buffer* text, int movement) {
@@ -99,6 +101,34 @@ void handle_terminal_format(screen* scr, text_buffer* text, int operation) {
   wprintw(t_window, format_string, bottom_string); 
   wmove(t_window, cursor_y, cursor_x);
   free(focused_string);
+}
+
+void print_boundaries(int cur_line, int terminal_y) {
+  int index = 0;
+  int free_lines = terminal_y - cur_line - 1;
+
+  if (free_lines == 0) return;
+
+  char* boundary = (char*) malloc((2 * (free_lines) + 1) * sizeof(char));
+
+  for (; index < 2 * (terminal_y - 1); index += 2) {
+    *(boundary + index) = '~';
+    *(boundary + index + 1) = '\n';
+  }
+  
+  *(boundary + index) = 0;
+
+  mvprintw(cur_line + 1, 0, "%s", boundary);
+  move(terminal_y - 1, 0);
+  refresh();
+  free(boundary);
+}
+
+void print_attr(const char* content, WINDOW* win, chtype attr) {
+  wattron(win, attr);
+  wprintw(win, content);
+  wattroff(win, attr);
+  wrefresh(win);
 }
 
 void kill() {
