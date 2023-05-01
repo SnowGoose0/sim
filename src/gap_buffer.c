@@ -47,10 +47,11 @@ void insert_text_buffer(text_buffer* t_buffer, char symbol) {
 // delete
 void delete_text_buffer(text_buffer* t_buffer) {
   if (t_buffer->buffer != t_buffer->gap_front) {
+    int terminal_x = t_buffer->terminal_x;
     t_buffer->gap_front--;
 
     if (t_buffer->cursor_offset == 0 && t_buffer->cursor_line != 0) {
-      t_buffer->cursor_offset = next_break(t_buffer, SEARCH_DIRECTION_BACKWARD) % t_buffer->terminal_x;
+      t_buffer->cursor_offset = next_break(t_buffer, SEARCH_DIRECTION_BACKWARD) % terminal_x;
       t_buffer->cursor_line--;
       
     } else t_buffer->cursor_offset--;

@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <ncurses.h>
 
 #include "utils.h"
 #include "gap_buffer.h"
@@ -131,8 +132,12 @@ void print_attr(const char* content, WINDOW* win, chtype attr) {
   wrefresh(win);
 }
 
-void kill() {
-  system("clear");
+void kill(screen* scr, text_buffer* text) {
   endwin();
+  delwin(scr->t_window);
+  delwin(scr->c_window);
+  free(scr);
+  free_text_buffer(text);
+  system("clear");
   exit(0);
 }

@@ -28,7 +28,7 @@ int main(void) {
       handle_text_inputs(scr, text, ch);
   }
   
-  kill();
+  kill(scr, text);
 }
 
 screen* init_screen() {
@@ -38,7 +38,6 @@ screen* init_screen() {
   
   init_render_window(new_screen);
   return new_screen;
-
 }
 
 void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
@@ -59,7 +58,7 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
       break;
 
     case 'q':
-      kill();
+      kill(scr, text);
       break;
       
     default:
@@ -88,7 +87,11 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       scr->mode = COMMAND_MODE;
       wmove(c_window, 0, 0);
       wclear(c_window);
-      wprintw(c_window, "%s", get_debug_string(text));
+      
+      char* debug_string = get_debug_string(text);
+      wprintw(c_window, "%s", debug_string);
+      free(debug_string);
+      
       wrefresh(c_window);
       break;
 
@@ -118,7 +121,7 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
     case KEY_BTAB:
     case '\t':
       for (int i = 0; i < TAB_LENGTH; ++i)
-	      insert_character(SPACE_CHAR, text, t_window, scr);
+        insert_character(SPACE_CHAR, text, t_window, scr);
       wrefresh(t_window);
       break;
    
