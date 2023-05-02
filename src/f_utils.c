@@ -38,6 +38,19 @@ exit(1);
   return f;
 }
 
+int write_file(file* file_data, char* file_string) {
+  FILE* fp;
+  char* file_name = file_data->file_name;
+  int status;
+
+  fp = fopen(file_name, "w");
+  status = fprintf(fp, "%s", file_string);
+  
+  fclose(fp);
+  
+  return status;
+}
+
 void destroy_file(file* f) {
   free(f);
 }

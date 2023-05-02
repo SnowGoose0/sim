@@ -31,6 +31,8 @@ typedef struct {
   WINDOW* c_window;
   int terminal_y;
   int terminal_x;
+  int s_cursor_y;
+  int s_cursor_x;
   int mode;
   char* boundary;
 } screen;

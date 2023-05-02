@@ -13,11 +13,11 @@
 #include "colors.h"
 #include "buffer.h"
 
+file* file_data;
+
 int main(int argc, char** argv) {
 
   /*  Handle program options  */
-
-  file* file_data;
 
   int opt = 0;
   int n_flag = 0, e_flag = 0, h_flag = 0, ur_flag = 0;
@@ -110,13 +110,12 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
       print_attr("[ INSERT ]", c_window, A_BOLD);
       wrefresh(c_window);
 
-      wmove(t_window, 0, 0);
-      move_cursor_sof(text);
+      wmove(t_window, scr->s_cursor_y, scr->s_cursor_x);
       wrefresh(t_window);
-
       break;
 
     case 'q':
+      write_file(file_data, get_focused_string(text));
       kill(scr, text);
       break;
       
@@ -130,12 +129,15 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
   WINDOW* t_window = scr->t_window;
   char* display_buffer = NULL;
   
-  //  int cursor_y, cursor_x;
-  //  getyx(scr->t_window, cursor_y, cursor_x);
+  int cursor_y, cursor_x;
+  getyx(scr->t_window, cursor_y, cursor_x);
   
   switch(ch) {
     case KEY_ESC:
       scr->mode = COMMAND_MODE;
+      scr->s_cursor_y = cursor_y;
+      scr->s_cursor_x = cursor_x;
+      
       wmove(c_window, 0, 0);
       wclear(c_window);
       

@@ -29,6 +29,8 @@ void init_render_window(screen* scr) {
   scr->c_window = command_window;
   scr->terminal_y = terminal_y;
   scr->terminal_x = terminal_x;
+  scr->s_cursor_y = 0;
+  scr->s_cursor_x = 0;
   scr->boundary = boundary;
 }
 
@@ -102,14 +104,13 @@ void handle_terminal_format(screen* scr, text_buffer* text, int operation) {
   
   wprintw(t_window, format_string, bottom_string);
   print_attr(scr->boundary, t_window, COLOR_PAIR(THEME_BOUNDARY));
-  print_line_count(scr, text, cursor_y, cursor_x);
+  print_line_count(scr, text);
   wmove(t_window, cursor_y, cursor_x);
   free(focused_string);
 }
 
-void print_line_count(screen* scr, text_buffer* text, int cursor_y, int cursor_x) {
+void print_line_count(screen* scr, text_buffer* text) {
   WINDOW* c_window = scr->c_window;
-  WINDOW* t_window = scr->t_window;
   char* coordinate_format = "L:%d C:%d";
 
   int loc_y = text->cursor_line + 1;
