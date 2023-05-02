@@ -14,6 +14,10 @@
 
 int main(int argc, char** argv) {
 
+  /*
+    Handle program options
+  */
+
   int opt = 0;
   int n_flag = 0, e_flag = 0, h_flag = 0, ur_flag = 0;
 
@@ -46,11 +50,15 @@ int main(int argc, char** argv) {
     exit(0);
   }
 
-  if (~(n_flag ^ e_flag) | ur_flag) {
+  if (ABS((n_flag ^ e_flag) - 1) | ur_flag) {
     printf(INVALID_FLAG_DESCR);
     
     exit(1);
   }
+
+  /*
+    Handle screen initialization
+  */
   
   initscr();
   start_color();
