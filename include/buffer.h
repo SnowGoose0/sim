@@ -12,6 +12,7 @@
 
 typedef struct {
   char* buffer;
+  char* buffer_viewable_front;
   char* gap_front;
   char* gap_end;
   int length;

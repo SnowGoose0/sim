@@ -21,7 +21,6 @@ int main(int argc, char** argv) {
 
   int opt = 0;
   int n_flag = 0, e_flag = 0, h_flag = 0, ur_flag = 0;
-  char* file_indicator;
 
   while ((opt = getopt(argc, argv, ARGS)) != -1) {
     switch(opt) {
@@ -123,7 +122,7 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
       break;
   }
 }
-
+ 
 void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
   WINDOW* c_window = scr->c_window;
   WINDOW* t_window = scr->t_window;
@@ -146,6 +145,11 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       free(debug_string);
       
       wrefresh(c_window);
+      break;
+
+    case '_':
+      cursor_up(scr, text);
+      wrefresh(t_window);
       break;
 
     case '-':
@@ -187,6 +191,20 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
   if (!display_buffer) free(display_buffer);
 }
 
+void cursor_up(screen* scr, text_buffer* text) {
+  int prev_line_offset = next_break(text, SEARCH_DIRECTION_BACKWARD);
+  int offset = MIN(prev_line_offset, scr->terminal_y);
+
+  for (int i = 0; i < offset; i++) {
+    cursor_left(scr, text);
+  }
+  
+}
+/*
+void cursor_down(screen* scr, text_buffer* text) {
+  
+}
+*/
 void cursor_left(screen* scr, text_buffer* text) {
   char ch = *(text->gap_front - 1);
 

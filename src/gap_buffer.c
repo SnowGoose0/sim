@@ -55,7 +55,6 @@ void delete_text_buffer(text_buffer* t_buffer) {
       t_buffer->cursor_line--;
       
     } else t_buffer->cursor_offset--;
-     
   }
 }
 
