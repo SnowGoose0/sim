@@ -7,28 +7,32 @@
 #include <ncurses.h>
 
 #include "main.h"
-#include "messages.h"
-#include "utils.h"
+#include "f_utils.h"
+#include "desc.h"
+#include "t_utils.h"
 #include "colors.h"
-#include "gap_buffer.h"
+#include "buffer.h"
 
 int main(int argc, char** argv) {
 
-  /*
-    Handle program options
-  */
+  /*  Handle program options  */
+
+  file* file_data;
 
   int opt = 0;
   int n_flag = 0, e_flag = 0, h_flag = 0, ur_flag = 0;
+  char* file_indicator;
 
   while ((opt = getopt(argc, argv, ARGS)) != -1) {
     switch(opt) {
       case 'n':
 	n_flag = 1;
+	file_data = new_file(optarg, FILE_NOT_EXIST);
 	break;
 	
       case 'e':
 	e_flag = 1;
+	file_data = new_file(optarg, FILE_EXIST);
 	break;
 
       case 'h':
@@ -51,14 +55,12 @@ int main(int argc, char** argv) {
   }
 
   if (ABS((n_flag ^ e_flag) - 1) | ur_flag) {
-    printf(INVALID_FLAG_DESCR);
+    fprintf(stderr, INVALID_FLAG_DESCR);
     
     exit(1);
   }
 
-  /*
-    Handle screen initialization
-  */
+  /*  Handle screen initialization  */
   
   initscr();
   start_color();
@@ -91,7 +93,6 @@ int main(int argc, char** argv) {
 
 screen* init_screen() {
   screen* new_screen = (screen*) malloc(sizeof(screen));
-  new_screen->eof = 0;
   new_screen->mode = COMMAND_MODE;
   
   init_render_window(new_screen);

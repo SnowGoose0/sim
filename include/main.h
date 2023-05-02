@@ -4,9 +4,7 @@
 #include <ncurses.h>
 
 #include "screen.h"
-#include "gap_buffer.h"
-
-#define EMPTY_FILE             "\0"
+#include "buffer.h"
 
 screen* init_screen();
 

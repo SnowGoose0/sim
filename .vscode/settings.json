@@ -6,6 +6,7 @@
         "stdarg.h": "c",
         "stdio.h": "c",
         "ncurses.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "gap_buffer.h": "c"
     }
 }

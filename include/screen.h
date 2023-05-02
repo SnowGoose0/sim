@@ -24,18 +24,14 @@
 #define LEGAL_CHAR_LOW        0x20
 #define LEGAL_CHAR_UP         0x7E
 
-#include "gap_buffer.h"
+#include "buffer.h"
 
 typedef struct {
   WINDOW* t_window;
   WINDOW* c_window;
-
-  int mode;
-  int eof;
-
   int terminal_y;
   int terminal_x;
-
+  int mode;
   char* boundary;
 } screen;
 

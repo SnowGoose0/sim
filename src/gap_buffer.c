@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gap_buffer.h"
+#include "buffer.h"
 
 // init
 // gap_front points to the first _

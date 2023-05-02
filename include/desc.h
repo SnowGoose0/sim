@@ -1,7 +1,7 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
-#define ARGS "neh"
+#define ARGS "n:e:h:"
 
 #define HELP_DESCR "SIM - SIMple Text Editor (%s)\n\
 \n\

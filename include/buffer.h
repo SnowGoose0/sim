@@ -8,6 +8,8 @@
 #define SEARCH_DIRECTION_FORWARD       0x10
 #define SEARCH_DIRECTION_BACKWARD      0x15
 
+#define EMPTY_FILE                     "\0"
+
 typedef struct {
   char* buffer;
   char* gap_front;

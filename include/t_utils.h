@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef T_UTILS_H
+#define T_UTILS_H
 
 #include <stdarg.h>
 #include <ncurses.h>

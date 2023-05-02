@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <ncurses.h>
 
-#include "utils.h"
+#include "t_utils.h"
 #include "colors.h"
-#include "gap_buffer.h"
+#include "buffer.h"
 
 void init_render_window(screen* scr) {
   int terminal_y, terminal_x;
