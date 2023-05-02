@@ -2,6 +2,10 @@
     "files.associations": {
         "random": "c",
         "termio.h": "c",
-        "termios.h": "c"
+        "termios.h": "c",
+        "stdarg.h": "c",
+        "stdio.h": "c",
+        "ncurses.h": "c",
+        "stdbool.h": "c"
     }
 }

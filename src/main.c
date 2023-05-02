@@ -1,16 +1,56 @@
-#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <math.h>
+#include <time.h>
 #include <string.h>
+#include <stdbool.h>
 #include <ncurses.h>
 
 #include "main.h"
+#include "messages.h"
 #include "utils.h"
 #include "colors.h"
 #include "gap_buffer.h"
 
-int main(void) {
-  int ch = 0;
+int main(int argc, char** argv) {
+
+  int opt = 0;
+  int n_flag = 0, e_flag = 0, h_flag = 0, ur_flag = 0;
+
+  while ((opt = getopt(argc, argv, ARGS)) != -1) {
+    switch(opt) {
+      case 'n':
+	n_flag = 1;
+	break;
+	
+      case 'e':
+	e_flag = 1;
+	break;
+
+      case 'h':
+	h_flag = 1;
+	break;
+
+      default:
+	ur_flag = 1;
+    }
+  }
+
+  if (h_flag) {
+    time_t c_time = time(NULL);
+    char* c_time_string = ctime(&c_time);
+    *(c_time_string + strcspn(c_time_string, "\n")) = 0;
+    
+    printf(HELP_DESCR, c_time_string);
+    
+    exit(0);
+  }
+
+  if (~(n_flag ^ e_flag) | ur_flag) {
+    printf(INVALID_FLAG_DESCR);
+    
+    exit(1);
+  }
   
   initscr();
   start_color();
@@ -20,7 +60,8 @@ int main(void) {
 
   init_pair(THEME_BOUNDARY, COLOR_GREEN, COLOR_BLACK);
   init_pair(THEME_WINDOW, COLOR_WHITE, COLOR_BLACK);
-  
+
+  int ch = 0;
   screen* scr = init_screen();
   text_buffer* text = init_text_buffer(EMPTY_FILE, scr->terminal_x);
 
@@ -80,16 +121,8 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
   WINDOW* t_window = scr->t_window;
   char* display_buffer = NULL;
   
-  int cursor_y, cursor_x;
-  getyx(scr->t_window, cursor_y, cursor_x);
-
-  int new_cursor_y = cursor_y;
-
-  if (cursor_x == 0 && cursor_y != 0) {
-    new_cursor_y--;
-  } else if (cursor_x == scr->terminal_x - 1) {
-    new_cursor_y++;
-  }
+  //  int cursor_y, cursor_x;
+  //  getyx(scr->t_window, cursor_y, cursor_x);
   
   switch(ch) {
     case KEY_ESC:

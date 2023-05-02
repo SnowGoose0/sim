@@ -102,9 +102,23 @@ void handle_terminal_format(screen* scr, text_buffer* text, int operation) {
   
   wprintw(t_window, format_string, bottom_string);
   print_attr(scr->boundary, t_window, COLOR_PAIR(THEME_BOUNDARY));
-  
+  print_line_count(scr, text, cursor_y, cursor_x);
   wmove(t_window, cursor_y, cursor_x);
   free(focused_string);
+}
+
+void print_line_count(screen* scr, text_buffer* text, int cursor_y, int cursor_x) {
+  WINDOW* c_window = scr->c_window;
+  WINDOW* t_window = scr->t_window;
+  char* coordinate_format = "L:%d C:%d";
+
+  int loc_y = text->cursor_line + 1;
+  int loc_x = text->cursor_offset + 1;
+
+  wmove(c_window, 0, scr->terminal_x - 24);
+  wclrtobot(c_window);
+  wprintw(c_window, coordinate_format, loc_y, loc_x);
+  wrefresh(c_window);
 }
 
 char* generate_boundary(int terminal_y) {
