@@ -207,20 +207,45 @@ void cursor_down(screen* scr, text_buffer* text) {
 */
 void cursor_left(screen* scr, text_buffer* text) {
   char ch = *(text->gap_front - 1);
+  int movement = MOVEMENT_BACKWARD;
 
+  /*
   if (ch != LINE_FEED_CHAR) {
-    handle_terminal_cursor(scr, text, MOVEMENT_BACKWARD);
-    text_cursor_left(text, 1);    
+    text_cursor_left(text, 1);
+    handle_terminal_cursor(scr, text, MOVEMENT_BACKWARD);    
   }
+
+  */
+
+  text_cursor_left(text, 1);
+
+  if (ch == LINE_FEED_CHAR)
+    movement = MOVEMENT_PREV_LN;
+
+  handle_terminal_cursor(scr, text, movement);
 }
 
 void cursor_right(screen* scr, text_buffer* text) {
+  if (text_cursor_at_eof(text))
+    return;
+  
   char ch = *text->gap_end;
+  int movement = MOVEMENT_FORWARD;
 
+  text_cursor_right(text, 1);
+
+  if (ch == LINE_FEED_CHAR)
+    movement = MOVEMENT_NEXT_LN;
+
+  handle_terminal_cursor(scr, text, movement);
+
+  /*
   if (!text_cursor_at_eof(text) && ch != LINE_FEED_CHAR) {
+    text_cursor_right(text, 1);
     handle_terminal_cursor(scr, text, MOVEMENT_FORWARD);
-    text_cursor_right(text, 1);    
+
   }
+  */
 }
 
 void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {

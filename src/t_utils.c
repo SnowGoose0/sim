@@ -41,22 +41,22 @@ void handle_terminal_cursor(screen* scr, text_buffer* text, int movement) {
   getyx(scr->t_window, cursor_y, cursor_x);
   
   new_cursor_y = cursor_y;
-
+  
   switch(movement) {
     case MOVEMENT_FORWARD:
       new_cursor_x = (cursor_x + 1) % scr->terminal_x;
     
       if (cursor_x == scr->terminal_x - 1)
-	      new_cursor_y = MIN(scr->terminal_y, cursor_y + 1);
+        new_cursor_y = MIN(scr->terminal_y, cursor_y + 1);
       break;
 
     case MOVEMENT_BACKWARD:
       new_cursor_x = cursor_x + cursor_y > 0
 	      ? MOD(cursor_x -1, scr->terminal_x)
 	      : cursor_x;
-      
+
       if (cursor_x == 0)
-	      new_cursor_y = MAX(0, cursor_y - 1);
+        new_cursor_y = MAX(0, cursor_y - 1);
       break;
 
     case MOVEMENT_NEXT_LN:

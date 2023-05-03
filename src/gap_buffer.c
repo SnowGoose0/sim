@@ -39,9 +39,8 @@ void insert_text_buffer(text_buffer* t_buffer, char symbol) {
   if (symbol == LINE_FEED_CHAR || t_buffer->terminal_x - 1 == t_buffer->cursor_offset) {
     t_buffer->cursor_offset = 0;
     t_buffer->cursor_line++;
-  } else {
-    t_buffer->cursor_offset++;
-  }
+    
+  } else t_buffer->cursor_offset++;
 }
 
 // delete
@@ -105,12 +104,19 @@ void text_cursor_left(text_buffer* t_buffer, int offset) {
     t_buffer->gap_front--;
     t_buffer->gap_end--;
     *(t_buffer->gap_end) = tmp;
+
+      if (t_buffer->cursor_offset == 0 && t_buffer->cursor_line != 0) {
+	t_buffer->cursor_offset = next_break(t_buffer, SEARCH_DIRECTION_BACKWARD) % t_buffer->terminal_x;
+	t_buffer->cursor_line--;
+      
+      } else t_buffer->cursor_offset--;
   }
 }
 
 // right
 void text_cursor_right(text_buffer* t_buffer, int offset) {
   char* buffer_back = t_buffer->buffer + t_buffer-> length;
+  char* symbol = *(t_buffer->gap_front - 1);
 
   for (int cur = 0; cur < offset; cur++) {
     if (t_buffer->gap_end == buffer_back) return;
@@ -119,7 +125,14 @@ void text_cursor_right(text_buffer* t_buffer, int offset) {
     t_buffer->gap_front++;
     t_buffer->gap_end++;
     *(t_buffer->gap_front - 1) = tmp;
+
+    if (symbol == LINE_FEED_CHAR || t_buffer->terminal_x - 1 == t_buffer->cursor_offset) {
+      t_buffer->cursor_offset = 0;
+      t_buffer->cursor_line++;
+      
+    } else t_buffer->cursor_offset++;
   }
+
 }
 
 void move_cursor_sof(text_buffer* t_buffer) {
@@ -130,7 +143,7 @@ void move_cursor_sof(text_buffer* t_buffer) {
 }
 
 int text_cursor_at_eof(text_buffer* t_buffer) {
-  if ((int) (t_buffer->gap_end - t_buffer->buffer) == t_buffer->length)
+  if ((t_buffer->gap_end - t_buffer->buffer) == t_buffer->length)
     return 1;
 
   return 0;
