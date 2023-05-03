@@ -34,6 +34,7 @@ void move_text_cursor(text_buffer* t_buffer, int position);
 void move_cursor_sof(text_buffer* t_buffer);
 void text_cursor_left(text_buffer* t_buffer, int offset);
 void text_cursor_right(text_buffer* t_buffer, int offset);
+void update_relative_cursor(text_buffer* t_buffer, int direction);
 int text_cursor_at_eof(text_buffer* t_buffer);
 
 int resize_gap(text_buffer* t_buffer);

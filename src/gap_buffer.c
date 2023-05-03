@@ -36,24 +36,15 @@ void insert_text_buffer(text_buffer* t_buffer, char symbol) {
   *dest = symbol;
   t_buffer->gap_front++;
 
-  if (symbol == LINE_FEED_CHAR || t_buffer->terminal_x - 1 == t_buffer->cursor_offset) {
-    t_buffer->cursor_offset = 0;
-    t_buffer->cursor_line++;
-    
-  } else t_buffer->cursor_offset++;
+  update_relative_cursor(t_buffer, SEARCH_DIRECTION_FORWARD);
 }
 
 // delete
 void delete_text_buffer(text_buffer* t_buffer) {
   if (t_buffer->buffer != t_buffer->gap_front) {
-    int terminal_x = t_buffer->terminal_x;
     t_buffer->gap_front--;
 
-    if (t_buffer->cursor_offset == 0 && t_buffer->cursor_line != 0) {
-      t_buffer->cursor_offset = next_break(t_buffer, SEARCH_DIRECTION_BACKWARD) % terminal_x;
-      t_buffer->cursor_line--;
-      
-    } else t_buffer->cursor_offset--;
+    update_relative_cursor(t_buffer, SEARCH_DIRECTION_BACKWARD);
   }
 }
 
@@ -105,18 +96,13 @@ void text_cursor_left(text_buffer* t_buffer, int offset) {
     t_buffer->gap_end--;
     *(t_buffer->gap_end) = tmp;
 
-      if (t_buffer->cursor_offset == 0 && t_buffer->cursor_line != 0) {
-	t_buffer->cursor_offset = next_break(t_buffer, SEARCH_DIRECTION_BACKWARD) % t_buffer->terminal_x;
-	t_buffer->cursor_line--;
-      
-      } else t_buffer->cursor_offset--;
+    update_relative_cursor(t_buffer, SEARCH_DIRECTION_BACKWARD);
   }
 }
 
 // right
 void text_cursor_right(text_buffer* t_buffer, int offset) {
   char* buffer_back = t_buffer->buffer + t_buffer-> length;
-  char* symbol = *(t_buffer->gap_front - 1);
 
   for (int cur = 0; cur < offset; cur++) {
     if (t_buffer->gap_end == buffer_back) return;
@@ -126,13 +112,32 @@ void text_cursor_right(text_buffer* t_buffer, int offset) {
     t_buffer->gap_end++;
     *(t_buffer->gap_front - 1) = tmp;
 
+    update_relative_cursor(t_buffer, SEARCH_DIRECTION_FORWARD);
+  }
+}
+
+void update_relative_cursor(text_buffer* t_buffer, int direction) {
+  char symbol = *(t_buffer->gap_front - 1);
+
+  if (direction == SEARCH_DIRECTION_FORWARD) {
     if (symbol == LINE_FEED_CHAR || t_buffer->terminal_x - 1 == t_buffer->cursor_offset) {
       t_buffer->cursor_offset = 0;
       t_buffer->cursor_line++;
       
     } else t_buffer->cursor_offset++;
+    
+    return;
   }
 
+  if (direction == SEARCH_DIRECTION_BACKWARD) {
+    if (t_buffer->cursor_offset == 0 && t_buffer->cursor_line != 0) {
+      int nearest_break = next_break(t_buffer, SEARCH_DIRECTION_BACKWARD);
+      
+      t_buffer->cursor_offset = nearest_break % t_buffer->terminal_x;
+      t_buffer->cursor_line--;
+      
+    } else t_buffer->cursor_offset--;
+  }
 }
 
 void move_cursor_sof(text_buffer* t_buffer) {
