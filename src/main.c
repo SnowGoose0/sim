@@ -10,8 +10,8 @@
 #include "desc.h"
 #include "colors.h"
 #include "buffer.h"
-#include "f_utils.h"
-#include "t_utils.h"
+#include "futils.h"
+#include "tutils.h"
 
 file* file_data;
 

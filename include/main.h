@@ -3,7 +3,7 @@
 
 #include <ncurses.h>
 
-#include "screen.h"
+#include "scr.h"
 #include "buffer.h"
 
 screen* init_screen();
