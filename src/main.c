@@ -264,9 +264,10 @@ void insert_next_line(text_buffer* text, screen* scr) {
 
 void delete_character(text_buffer* text, WINDOW* win, screen* scr) {
   char ch = *(text->gap_front - 1);
+  int movement = ch != LINE_FEED_CHAR ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN;
 
   delete_text_buffer(text);
-  handle_terminal_cursor(scr, text, ch != LINE_FEED_CHAR ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN);
+  handle_terminal_cursor(scr, text, movement);
   wdelch(win);
   handle_terminal_format(scr, text, OPERATION_DELETE);
 }
