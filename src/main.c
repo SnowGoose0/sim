@@ -7,11 +7,11 @@
 #include <ncurses.h>
 
 #include "main.h"
-#include "f_utils.h"
 #include "desc.h"
-#include "t_utils.h"
 #include "colors.h"
 #include "buffer.h"
+#include "f_utils.h"
+#include "t_utils.h"
 
 file* file_data;
 
@@ -67,12 +67,12 @@ int main(int argc, char** argv) {
   noecho();
   raw();
 
-  init_pair(THEME_BOUNDARY, COLOR_GREEN, COLOR_BLACK);
+  init_pair(THEME_BOUNDARY, COLOR_MAGENTA, COLOR_BLACK);
   init_pair(THEME_WINDOW, COLOR_WHITE, COLOR_BLACK);
 
   int ch = 0;
   screen* scr = init_screen();
-  text_buffer* text = init_text_buffer(EMPTY_FILE, scr->terminal_x);
+  text_buffer* text = init_text_buffer(file_data->file_content, scr->terminal_x);
 
   wbkgd(scr->t_window, COLOR_PAIR(THEME_WINDOW));
   wbkgd(scr->c_window, COLOR_PAIR(THEME_WINDOW));
@@ -94,7 +94,7 @@ screen* init_screen() {
   screen* new_screen = (screen*) malloc(sizeof(screen));
   new_screen->mode = COMMAND_MODE;
   
-  init_render_window(new_screen);
+  init_render_window(new_screen, file_data);
   return new_screen;
 }
 
@@ -102,7 +102,7 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
   WINDOW* t_window = scr->t_window;
   WINDOW* c_window = scr->c_window;
   
-  switch(ch) {    
+  switch(ch) {
     case 'i':
       scr->mode = INSERT_MODE;
       werase(c_window);
@@ -111,6 +111,9 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
 
       wmove(t_window, scr->s_cursor_y, scr->s_cursor_x);
       wrefresh(t_window);
+      break;
+
+    case 'w':
       break;
 
     case 'q':
@@ -149,6 +152,11 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
 
     case '_':
       cursor_up(scr, text);
+      wrefresh(t_window);
+      break;
+
+    case '+':
+      cursor_down(scr, text);
       wrefresh(t_window);
       break;
 
@@ -198,11 +206,17 @@ void cursor_up(screen* scr, text_buffer* text) {
   for (int i = 0; i < offset + 1; i++)
     cursor_left(scr, text);
 }
-/*
+
+
 void cursor_down(screen* scr, text_buffer* text) {
-  
+  int next_line_offset = next_break(text, SEARCH_DIRECTION_FORWARD);
+  int offset = MIN(next_line_offset, scr->terminal_y);
+
+  for (int i = 0; i < offset + 1; i++)
+    cursor_right(scr, text);
 }
-*/
+
+
 void cursor_left(screen* scr, text_buffer* text) {
   char ch = *(text->gap_front - 1);
   int movement = MOVEMENT_BACKWARD;

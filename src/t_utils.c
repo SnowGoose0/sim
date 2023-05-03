@@ -2,10 +2,11 @@
 #include <ncurses.h>
 
 #include "t_utils.h"
+#include "f_utils.h"
 #include "colors.h"
 #include "buffer.h"
 
-void init_render_window(screen* scr) {
+void init_render_window(screen* scr, file* file_data) {
   int terminal_y, terminal_x;
   getmaxyx(stdscr, terminal_y, terminal_x);
 
@@ -19,8 +20,10 @@ void init_render_window(screen* scr) {
 
   char* boundary = generate_boundary(terminal_y);
 
-  // avoid the first line feed
-  print_attr(boundary + 1, text_window, COLOR_PAIR(THEME_BOUNDARY));
+  
+  /* skip the first line feed */
+  wprintw(text_window, "%s", file_data->file_content);
+  print_attr(boundary, text_window, COLOR_PAIR(THEME_BOUNDARY));
 
   wmove(command_window, 0, 0);
   wrefresh(command_window);
@@ -144,9 +147,11 @@ void kill(screen* scr, text_buffer* text) {
   endwin();
   delwin(scr->t_window);
   delwin(scr->c_window);
+  
   free(scr->boundary);
   free(scr);
   free_text_buffer(text);
+  
   system("clear");
   exit(0);
 }

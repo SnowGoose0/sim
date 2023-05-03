@@ -3,6 +3,8 @@
 
 #include <stdarg.h>
 #include <ncurses.h>
+
+#include "f_utils.h"
 #include "screen.h"
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
@@ -13,7 +15,7 @@
 void kill(screen* scr, text_buffer* text);
 
 char* generate_boundary(int terminal_y);
-void init_render_window(screen* scr);
+void init_render_window(screen* scr, file* file_data);
 
 void handle_terminal_cursor(screen* scr, text_buffer* text, int movement);
 void handle_terminal_format(screen* scr, text_buffer* text, int operation);
