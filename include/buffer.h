@@ -29,6 +29,7 @@ char* get_debug_string(text_buffer* t_buffer);
 char* get_focused_string(text_buffer* t_buffer);
 void display_text_buffer(text_buffer* t_buffer);
 
+
 void insert_text_buffer(text_buffer* t_buffer, char symbol);
 void delete_text_buffer(text_buffer* t_buffer);
 
