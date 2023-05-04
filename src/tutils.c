@@ -20,7 +20,7 @@ void init_render_window(screen* scr, file* file_data) {
   char* boundary = generate_boundary(terminal_y);
   
   /* skip the first line feed */
-  wprintw(text_window, "%s", file_data->file_content);
+  wprintw(text_window, file_data->file_content);
   print_attr(boundary, text_window, COLOR_PAIR(THEME_BOUNDARY));
   wrefresh(text_window);
 

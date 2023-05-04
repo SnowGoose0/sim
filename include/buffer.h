@@ -12,9 +12,9 @@
 
 typedef struct {
   char* buffer;
-  char* buffer_viewable_front;
   char* gap_front;
   char* gap_end;
+  int buffer_viewable_front; /* offset: of the char in the corner of the screen  */
   int length;
   int cursor_line;
   int cursor_offset;
@@ -22,6 +22,8 @@ typedef struct {
 } text_buffer;
 
 text_buffer* init_text_buffer(char* buffer, int terminal_x);
+
+int resize_gap(text_buffer* t_buffer);
 
 char* get_debug_string(text_buffer* t_buffer);
 char* get_focused_string(text_buffer* t_buffer);
@@ -34,10 +36,11 @@ void move_text_cursor(text_buffer* t_buffer, int position);
 void move_cursor_sof(text_buffer* t_buffer);
 void text_cursor_left(text_buffer* t_buffer, int offset);
 void text_cursor_right(text_buffer* t_buffer, int offset);
-void update_relative_cursor(text_buffer* t_buffer, int direction);
-int text_cursor_at_eof(text_buffer* t_buffer);
 
-int resize_gap(text_buffer* t_buffer);
+void update_relative_cursor(text_buffer* t_buffer, int direction);
+void update_buffer_viewable_front(text_buffer* t_buffer, int direction);
+
+int text_cursor_at_eof(text_buffer* t_buffer);
 
 int next_break(text_buffer* text, int direction);
 

@@ -7,11 +7,11 @@
 #include <ncurses.h>
 
 #include "main.h"
+#include "futils.h"
+#include "tutils.h"
 #include "desc.h"
 #include "colors.h"
 #include "buffer.h"
-#include "futils.h"
-#include "tutils.h"
 
 file* file_data;
 
@@ -101,8 +101,7 @@ screen* init_screen() {
 void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
   WINDOW* t_window = scr->t_window;
   WINDOW* c_window = scr->c_window;
-  
-  switch(ch) {
+    switch(ch) {
     case 'i':
       scr->mode = INSERT_MODE;
       werase(c_window);
@@ -148,6 +147,16 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       free(debug_string);
       
       wrefresh(c_window);
+      break;
+
+    case '<':
+      scroll_screen(scr, text, SEARCH_DIRECTION_BACKWARD);
+      wrefresh(t_window);
+      break;
+
+    case '>':
+      scroll_screen(scr, text, SEARCH_DIRECTION_FORWARD);
+      wrefresh(t_window);
       break;
 
     case '_':
@@ -199,20 +208,39 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
   if (!display_buffer) free(display_buffer);
 }
 
+void scroll_screen(screen* scr, text_buffer* text, int direction) {
+  int cursor_y, cursor_x;
+  getyx(scr->t_window, cursor_y, cursor_x);
+  
+  char* focus_string;
+  update_buffer_viewable_front(text, direction);
+
+  if (direction == SEARCH_DIRECTION_FORWARD)
+    cursor_down(scr, text);
+  else
+    cursor_up(scr, text);
+  
+  wclear(scr->t_window);
+  focus_string = get_focused_string(text) + text->buffer_viewable_front;
+  
+  wprintw(scr->t_window, "%s", focus_string);
+  wmove(scr->t_window, cursor_y, cursor_x);
+}
+
 void cursor_up(screen* scr, text_buffer* text) {
   int prev_line_offset = next_break(text, SEARCH_DIRECTION_BACKWARD);
-  int offset = MIN(prev_line_offset, scr->terminal_y);
+  int offset = MIN(prev_line_offset, scr->terminal_x);
 
-  for (int i = 0; i < offset + 1; i++)
+  for (int i = 0; i < offset; i++)
     cursor_left(scr, text);
 }
 
 
 void cursor_down(screen* scr, text_buffer* text) {
   int next_line_offset = next_break(text, SEARCH_DIRECTION_FORWARD);
-  int offset = MIN(next_line_offset, scr->terminal_y);
+  int offset = MIN(next_line_offset, scr->terminal_x);
 
-  for (int i = 0; i < offset + 1; i++)
+  for (int i = 0; i < offset; i++)
     cursor_right(scr, text);
 }
 

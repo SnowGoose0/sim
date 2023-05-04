@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "buffer.h"
+#include "tutils.h"
 
 // init
 // gap_front points to the first _
@@ -15,6 +16,8 @@ text_buffer* init_text_buffer(char* buffer, int terminal_x) {
   new_buffer->buffer = (char*) calloc(text_buffer_length, sizeof(char));
   new_buffer->gap_front = new_buffer->buffer;
   new_buffer->gap_end = new_buffer->buffer + BUFF_GAP_SIZE;
+  new_buffer->buffer_viewable_front = 0;
+  
   new_buffer->length = text_buffer_length;
   new_buffer->cursor_line = 0;
   new_buffer->cursor_offset = 0;
@@ -125,7 +128,7 @@ void update_relative_cursor(text_buffer* t_buffer, int direction) {
       t_buffer->cursor_line++;
       
     } else t_buffer->cursor_offset++;
-    
+
     return;
   }
 
@@ -139,6 +142,17 @@ void update_relative_cursor(text_buffer* t_buffer, int direction) {
     } else t_buffer->cursor_offset--;
   }
 }
+
+/* forward and backward once */
+void update_buffer_viewable_front(text_buffer* t_buffer, int direction) {
+  int next_line_offset = MIN(next_break(t_buffer, direction), t_buffer->terminal_x);
+
+  if (direction == SEARCH_DIRECTION_FORWARD)
+    t_buffer->buffer_viewable_front += next_line_offset;
+  
+  else if (direction == SEARCH_DIRECTION_BACKWARD)
+    t_buffer->buffer_viewable_front -= next_line_offset;
+} 
 
 void move_cursor_sof(text_buffer* t_buffer) {
   char* front = t_buffer->buffer;
