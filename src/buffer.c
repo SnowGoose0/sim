@@ -150,37 +150,76 @@ void update_buffer_viewable_front(text_buffer* t_buffer, int direction) {
   char* tmp = start_viewable;
 
   int terminal_x = t_buffer->terminal_x;
+  
 
+  /* scroll down */
   if (direction == SEARCH_DIRECTION_FORWARD) {
+
+    
     while(*tmp != LINE_FEED_CHAR && tmp - start_viewable < terminal_x) {
       ++tmp;
 
+      /* if the current displayed line is the last line in the file */
       if (!*tmp) return;
     }
 
+    /* if the new line ends with line_feed then increment once to the next character */
     if (*tmp == LINE_FEED_CHAR) tmp++;
+    
 
+    /* update the new offset */
     t_buffer->buffer_viewable_front = tmp - start;
 
-  } else if (direction == SEARCH_DIRECTION_BACKWARD) {
-    if (!t_buffer->buffer_viewable_front) return;
+
     
+    /* scroll up */  
+  } else if (direction == SEARCH_DIRECTION_BACKWARD) {
+
+    /* if the offset is 0 then it is the start of file => do nothing */
+    if (!t_buffer->buffer_viewable_front) return;
+
+    /* viewable offsets stores the offset of a char that is either after a \n
+       or after a viewable char
+
+       Ex. hello\nworld => 'w' is at the offset location
+       Ex. helloworld   => 'w' is at the offset location (assuming o is at the edge)
+     */
     if (*(--tmp) == LINE_FEED_CHAR) tmp -= 2;
 
-    while(*tmp != LINE_FEED_CHAR
-    //&& ABS(tmp - start_viewable) < terminal_x
-    && tmp != start) {
+
+    /* get the entire paragraph */
+    while(*tmp != LINE_FEED_CHAR && tmp != start) {
       --tmp;
     }
 
+    /* increment once so the current char isn't \n */
     if (*tmp == LINE_FEED_CHAR) tmp++;
 
-    int x = (start_viewable - tmp) % t_buffer->terminal_x;
+    /* get the remaining of the paragraph
 
-    if (x == 0) x = t_buffer->terminal_x;
+       assume screen width is 11
 
-    // t_buffer->buffer_viewable_front = tmp - start;
-    t_buffer->buffer_viewable_front = t_buffer->buffer_viewable_front - x;
+     \nhello_world
+       hello_world
+       hel
+
+       this should return the length 3 of "hel"
+     */
+    int offset = (start_viewable - tmp) % t_buffer->terminal_x;
+
+    
+    /* if 0 then that means the entire line is viewable
+
+       Ex.
+       
+     \nhello_world
+       hello_world
+       
+     */
+    if (offset == 0) offset = t_buffer->terminal_x;
+
+    /* new offset */
+    t_buffer->buffer_viewable_front = t_buffer->buffer_viewable_front - offset;
   }
 }
 
