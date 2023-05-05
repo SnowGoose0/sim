@@ -205,6 +205,8 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       break;
   }
 
+  display_cursor_location(scr, text);
+
   if (!display_buffer) free(display_buffer);
 }
 
@@ -217,20 +219,20 @@ void scroll_screen(screen* scr, text_buffer* text, int direction) {
 
   if (direction == SEARCH_DIRECTION_FORWARD)
     cursor_down(scr, text);
-  else
+  else  
     cursor_up(scr, text);
   
-  wclear(scr->t_window);
   focus_string = buffer_to_string(text) + text->buffer_viewable_front;
+
+  wclear(scr->t_window);
   mvwprintw(scr->t_window, 0, 0, "%s", focus_string);
   print_attr(scr->boundary, scr->t_window, COLOR_PAIR(THEME_BOUNDARY));
-
   wmove(scr->t_window, cursor_y, text->cursor_offset);
 }
 
 void cursor_up(screen* scr, text_buffer* text) {
   int prev_line_offset = next_break(text, SEARCH_DIRECTION_BACKWARD);
-  int offset = MIN(prev_line_offset, scr->terminal_x) + 1;
+  int offset = MIN(prev_line_offset + 1, scr->terminal_x);
 
   if (text->gap_front - 1 - offset < text->buffer) return;
 
@@ -241,7 +243,7 @@ void cursor_up(screen* scr, text_buffer* text) {
 
 void cursor_down(screen* scr, text_buffer* text) {
   int next_line_offset = next_break(text, SEARCH_DIRECTION_FORWARD);
-  int offset = MIN(next_line_offset, scr->terminal_x) + 1;
+  int offset = MIN(next_line_offset + 1, scr->terminal_x);
 
   if (text->gap_end + offset > text->buffer + text->length) return;
 

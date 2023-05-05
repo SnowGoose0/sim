@@ -146,23 +146,42 @@ void update_relative_cursor(text_buffer* t_buffer, int direction) {
 /* forward and backward once */
 void update_buffer_viewable_front(text_buffer* t_buffer, int direction) {
   char* start = buffer_to_string(t_buffer);
-  char* tmp = start + t_buffer->buffer_viewable_front;
-  int offset_direction = 1;
+  char* start_viewable = start + t_buffer->buffer_viewable_front;
+  char* tmp = start_viewable;
 
-  if (direction == SEARCH_DIRECTION_BACKWARD) {
+  int terminal_x = t_buffer->terminal_x;
+
+  if (direction == SEARCH_DIRECTION_FORWARD) {
+    while(*tmp != LINE_FEED_CHAR && tmp - start_viewable < terminal_x) {
+      ++tmp;
+
+      if (!*tmp) return;
+    }
+
+    if (*tmp == LINE_FEED_CHAR) tmp++;
+
+    t_buffer->buffer_viewable_front = tmp - start;
+
+  } else if (direction == SEARCH_DIRECTION_BACKWARD) {
     if (tmp == start) return;
+    if (*(tmp - 1) == LINE_FEED_CHAR) tmp -= 2;
+    else --tmp;
 
-    offset_direction = -1;
-    tmp -= 2; /* move tmp behind the first line feed on the left*/
+    while(*tmp != LINE_FEED_CHAR
+    //&& ABS(tmp - start_viewable) < terminal_x
+    && tmp != start) {
+      --tmp;
+    }
+
+    if (*tmp == LINE_FEED_CHAR) tmp++;
+
+    int x = (start_viewable - tmp) % t_buffer->terminal_x;
+
+    if (x == 0) x = t_buffer->terminal_x;
+
+    // t_buffer->buffer_viewable_front = tmp - start;
+    t_buffer->buffer_viewable_front = t_buffer->buffer_viewable_front - x;
   }
-
-  while(*tmp != LINE_FEED_CHAR) {
-    tmp += offset_direction;
-
-    if (!*tmp) return;
-  }
-
-  t_buffer->buffer_viewable_front = tmp - start + 1;
 }
 
 int buffer_cursor_at_eof(text_buffer* t_buffer) {
