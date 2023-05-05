@@ -163,9 +163,9 @@ void update_buffer_viewable_front(text_buffer* t_buffer, int direction) {
     t_buffer->buffer_viewable_front = tmp - start;
 
   } else if (direction == SEARCH_DIRECTION_BACKWARD) {
-    if (tmp == start) return;
-    if (*(tmp - 1) == LINE_FEED_CHAR) tmp -= 2;
-    else --tmp;
+    if (!t_buffer->buffer_viewable_front) return;
+    
+    if (*(--tmp) == LINE_FEED_CHAR) tmp -= 2;
 
     while(*tmp != LINE_FEED_CHAR
     //&& ABS(tmp - start_viewable) < terminal_x

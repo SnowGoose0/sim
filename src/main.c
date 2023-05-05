@@ -215,12 +215,16 @@ void scroll_screen(screen* scr, text_buffer* text, int direction) {
   getyx(scr->t_window, cursor_y, cursor_x);
   
   char* focus_string;
+  char* viewable_prev = text->buffer_viewable_front;
   update_buffer_viewable_front(text, direction);
 
-  if (direction == SEARCH_DIRECTION_FORWARD)
+  if (direction == SEARCH_DIRECTION_FORWARD) {
     cursor_down(scr, text);
-  else  
+  } else {
+    if (text->buffer_viewable_front == viewable_prev) return;
+    
     cursor_up(scr, text);
+  }
   
   focus_string = buffer_to_string(text) + text->buffer_viewable_front;
 
@@ -234,7 +238,7 @@ void cursor_up(screen* scr, text_buffer* text) {
   int prev_line_offset = next_break(text, SEARCH_DIRECTION_BACKWARD);
   int offset = MIN(prev_line_offset + 1, scr->terminal_x);
 
-  if (text->gap_front - 1 - offset < text->buffer) return;
+  if (text->gap_front - offset < text->buffer) return;
 
   for (int i = 0; i < offset; i++)
     cursor_left(scr, text);
