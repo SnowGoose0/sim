@@ -116,7 +116,7 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
       break;
 
     case 'q':
-      write_file(file_data, get_focused_string(text));
+      write_file(file_data, buffer_to_string(text));
       kill(scr, text);
       break;
       
@@ -142,7 +142,7 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       wmove(c_window, 0, 0);
       wclear(c_window);
       
-      char* debug_string = get_debug_string(text);
+      char* debug_string = buffer_to_dstring(text);
       wprintw(c_window, "%s", debug_string);
       free(debug_string);
       
@@ -221,15 +221,18 @@ void scroll_screen(screen* scr, text_buffer* text, int direction) {
     cursor_up(scr, text);
   
   wclear(scr->t_window);
-  focus_string = get_focused_string(text) + text->buffer_viewable_front;
-  
-  wprintw(scr->t_window, "%s", focus_string);
-  wmove(scr->t_window, cursor_y, cursor_x);
+  focus_string = buffer_to_string(text) + text->buffer_viewable_front;
+  mvwprintw(scr->t_window, 0, 0, "%s", focus_string);
+  print_attr(scr->boundary, scr->t_window, COLOR_PAIR(THEME_BOUNDARY));
+
+  wmove(scr->t_window, cursor_y, text->cursor_offset);
 }
 
 void cursor_up(screen* scr, text_buffer* text) {
   int prev_line_offset = next_break(text, SEARCH_DIRECTION_BACKWARD);
-  int offset = MIN(prev_line_offset, scr->terminal_x);
+  int offset = MIN(prev_line_offset, scr->terminal_x) + 1;
+
+  if (text->gap_front - 1 - offset < text->buffer) return;
 
   for (int i = 0; i < offset; i++)
     cursor_left(scr, text);
@@ -238,7 +241,9 @@ void cursor_up(screen* scr, text_buffer* text) {
 
 void cursor_down(screen* scr, text_buffer* text) {
   int next_line_offset = next_break(text, SEARCH_DIRECTION_FORWARD);
-  int offset = MIN(next_line_offset, scr->terminal_x);
+  int offset = MIN(next_line_offset, scr->terminal_x) + 1;
+
+  if (text->gap_end + offset > text->buffer + text->length) return;
 
   for (int i = 0; i < offset; i++)
     cursor_right(scr, text);
@@ -249,7 +254,7 @@ void cursor_left(screen* scr, text_buffer* text) {
   char ch = *(text->gap_front - 1);
   int movement = MOVEMENT_BACKWARD;
   
-  text_cursor_left(text, 1);
+  cursor_left_buffer(text, 1);
 
   if (ch == LINE_FEED_CHAR)
     movement = MOVEMENT_PREV_LN;
@@ -261,10 +266,10 @@ void cursor_right(screen* scr, text_buffer* text) {
   char ch = *text->gap_end;
   int movement = MOVEMENT_FORWARD;
   
-  if (text_cursor_at_eof(text))
+  if (buffer_cursor_at_eof(text))
     return;
   
-  text_cursor_right(text, 1);
+  cursor_right_buffer(text, 1);
 
   if (ch == LINE_FEED_CHAR)
     movement = MOVEMENT_NEXT_LN;
@@ -277,16 +282,16 @@ void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
     int operation = OPERATION_INSERT;
     int movement = MOVEMENT_FORWARD;
     
-    insert_text_buffer(text, (char) ch);
+    insertion_buffer(text, (char) ch);
     winsch(win, ch);
     handle_terminal_cursor(scr, text, movement);
-    handle_terminal_format(scr, text, operation);
+    handle_terminal_ops(scr, text, operation);
   }
 }
 
 void insert_next_line(text_buffer* text, screen* scr) {
-  insert_text_buffer(text, LINE_FEED_CHAR);
-  handle_terminal_format(scr, text, OPERATION_NEXT_LN);
+  insertion_buffer(text, LINE_FEED_CHAR);
+  handle_terminal_ops(scr, text, OPERATION_NEXT_LN);
   handle_terminal_cursor(scr, text, MOVEMENT_NEXT_LN);
 }
 
@@ -294,8 +299,8 @@ void delete_character(text_buffer* text, WINDOW* win, screen* scr) {
   char ch = *(text->gap_front - 1);
   int movement = ch != LINE_FEED_CHAR ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN;
 
-  delete_text_buffer(text);
+  deletion_buffer(text);
   handle_terminal_cursor(scr, text, movement);
   wdelch(win);
-  handle_terminal_format(scr, text, OPERATION_DELETE);
+  handle_terminal_ops(scr, text, OPERATION_DELETE);
 }

@@ -30,9 +30,9 @@ text_buffer* init_text_buffer(char* buffer, int terminal_x) {
 }
 
 // insert
-void insert_text_buffer(text_buffer* t_buffer, char symbol) {
+void insertion_buffer(text_buffer* t_buffer, char symbol) {
   if (t_buffer->gap_front == t_buffer->gap_end) {
-    resize_gap(t_buffer);
+    resize_buffer(t_buffer);
   }
 
   char* dest = t_buffer->gap_front;
@@ -43,7 +43,7 @@ void insert_text_buffer(text_buffer* t_buffer, char symbol) {
 }
 
 // delete
-void delete_text_buffer(text_buffer* t_buffer) {
+void deletion_buffer(text_buffer* t_buffer) {
   if (t_buffer->buffer != t_buffer->gap_front) {
     t_buffer->gap_front--;
 
@@ -53,7 +53,7 @@ void delete_text_buffer(text_buffer* t_buffer) {
 
 // grow
 // this function should only be called if gap size is 0
-int resize_gap(text_buffer* t_buffer) {
+int resize_buffer(text_buffer* t_buffer) {
   char* tmp = t_buffer->buffer;
   
   int new_buffer_length = BUFF_GAP_SIZE + t_buffer->length;
@@ -80,15 +80,15 @@ void move_cursor(text_buffer* t_buffer, int position) {
   int current_position = (int)(t_buffer->buffer - t_buffer->gap_front);
   
   if (position < current_position) {
-    text_cursor_left(t_buffer, position);
+    cursor_left_buffer(t_buffer, position);
     return;
   }
 
-  text_cursor_right(t_buffer, position);
+  cursor_right_buffer(t_buffer, position);
 }
 
 // left
-void text_cursor_left(text_buffer* t_buffer, int offset) {
+void cursor_left_buffer(text_buffer* t_buffer, int offset) {
   char* buffer_front = t_buffer->buffer;
   
   for (int cur = 0; cur < offset; cur++) {
@@ -104,7 +104,7 @@ void text_cursor_left(text_buffer* t_buffer, int offset) {
 }
 
 // right
-void text_cursor_right(text_buffer* t_buffer, int offset) {
+void cursor_right_buffer(text_buffer* t_buffer, int offset) {
   char* buffer_back = t_buffer->buffer + t_buffer-> length;
 
   for (int cur = 0; cur < offset; cur++) {
@@ -145,32 +145,67 @@ void update_relative_cursor(text_buffer* t_buffer, int direction) {
 
 /* forward and backward once */
 void update_buffer_viewable_front(text_buffer* t_buffer, int direction) {
-  int next_line_offset = MIN(next_break(t_buffer, direction), t_buffer->terminal_x);
+  char* start = buffer_to_string(t_buffer);
+  char* tmp = start + t_buffer->buffer_viewable_front;
+  int offset_direction = 1;
 
-  if (direction == SEARCH_DIRECTION_FORWARD)
-    t_buffer->buffer_viewable_front += next_line_offset;
-  
-  else if (direction == SEARCH_DIRECTION_BACKWARD)
-    t_buffer->buffer_viewable_front -= next_line_offset;
-} 
+  if (direction == SEARCH_DIRECTION_BACKWARD) {
+    if (tmp == start) return;
 
-void move_cursor_sof(text_buffer* t_buffer) {
-  char* front = t_buffer->buffer;
-  
-  while(t_buffer->gap_front != front)
-    text_cursor_left(t_buffer, 1);
+    offset_direction = -1;
+    tmp -= 2; /* move tmp behind the first line feed on the left*/
+  }
+
+  while(*tmp != LINE_FEED_CHAR) {
+    tmp += offset_direction;
+
+    if (!*tmp) return;
+  }
+
+  t_buffer->buffer_viewable_front = tmp - start + 1;
 }
 
-int text_cursor_at_eof(text_buffer* t_buffer) {
+int buffer_cursor_at_eof(text_buffer* t_buffer) {
   if ((t_buffer->gap_end - t_buffer->buffer) == t_buffer->length)
     return 1;
 
   return 0;
 }
 
-// display
-// this function is only for debugging purposes
-void display_text_buffer(text_buffer* t_buffer) {
+char* buffer_to_string(text_buffer* t_buffer) {
+  int n = t_buffer->length;
+  char* buffer_str;
+
+  buffer_str = (char*) calloc(n + 1, sizeof(char));
+  char* tmp = buffer_str;
+  char* src = t_buffer->buffer;
+
+  while (n--) {
+    if (t_buffer->gap_front <= src && src < t_buffer->gap_end) {
+      ++src;
+      continue;
+    }
+    *tmp++ = *src++;
+  }
+
+  return buffer_str;
+}
+
+char* buffer_to_dstring(text_buffer* t_buffer) {
+  char* d_str = buffer_to_string(t_buffer);
+  char* tmp = d_str;
+
+  while (*tmp) {
+    if (*tmp == '\n')
+      *tmp = '$';
+    ++tmp;
+  }
+
+  return d_str;
+}
+
+/* this function is for debugging purposes only */
+void _display_text_buffer(text_buffer* t_buffer) {
   char* buffer = t_buffer->buffer;
   int is_gap = 0;
 
@@ -201,7 +236,7 @@ int next_break(text_buffer* t_buffer, int direction) {
   if (direction == SEARCH_DIRECTION_FORWARD) tmp = t_buffer->gap_end;
   else tmp = t_buffer->gap_front - 1;
 
-  while(*tmp != LINE_FEED_CHAR && *tmp != 0) {
+  while(*tmp != LINE_FEED_CHAR && *tmp) {
     if (direction == SEARCH_DIRECTION_FORWARD) ++tmp;
     else --tmp;
     ++count;
@@ -211,42 +246,7 @@ int next_break(text_buffer* t_buffer, int direction) {
 }
 
 // free
-void free_text_buffer(text_buffer* t_buffer) {
+void free_buffer(text_buffer* t_buffer) {
   free(t_buffer->buffer);
   free(t_buffer);
-}
-
-char* get_debug_string(text_buffer* t_buffer) {
-  int len = t_buffer->length + 1;
-  char* buffer = t_buffer->buffer;
-  char* str = (char*) calloc(len, sizeof(char));
-
-  char* ignore_bound_low = t_buffer->gap_front;
-  char* ignore_bound_up = t_buffer->gap_end;
-
-  int str_index = 0;
-  for(int i = 0; i < t_buffer->length; i++) {
-    char* cur = buffer + i;
-    char ch = *cur;
-
-    if (ignore_bound_low <= cur && cur < ignore_bound_up) continue;
-    if (ch == LINE_FEED_CHAR) ch = '&';
- 
-    str[str_index] = ch;
-    ++str_index;
-  }
-
-  return str;
-}
-
-char* get_focused_string(text_buffer* t_buffer) {
-  char* f_string = get_debug_string(t_buffer);
-  char* tmp = f_string;
-
-  while(*tmp != 0) {
-    if (*tmp == '&') *tmp = LINE_FEED_CHAR;
-    tmp++;
-  }
-
-  return f_string;
 }

@@ -23,29 +23,26 @@ typedef struct {
 
 text_buffer* init_text_buffer(char* buffer, int terminal_x);
 
-int resize_gap(text_buffer* t_buffer);
+int resize_buffer(text_buffer* t_buffer);
 
-char* get_debug_string(text_buffer* t_buffer);
-char* get_focused_string(text_buffer* t_buffer);
-void display_text_buffer(text_buffer* t_buffer);
+char* buffer_to_dstring(text_buffer* t_buffer);
+char* buffer_to_string(text_buffer* t_buffer);
+void _display_text_buffer(text_buffer* t_buffer);
 
+void insertion_buffer(text_buffer* t_buffer, char symbol);
+void deletion_buffer(text_buffer* t_buffer);
 
-void insert_text_buffer(text_buffer* t_buffer, char symbol);
-void delete_text_buffer(text_buffer* t_buffer);
-
-void move_text_cursor(text_buffer* t_buffer, int position);
-void move_cursor_sof(text_buffer* t_buffer);
-void text_cursor_left(text_buffer* t_buffer, int offset);
-void text_cursor_right(text_buffer* t_buffer, int offset);
+void move_buffer_cursor(text_buffer* t_buffer, int position);
+void cursor_left_buffer(text_buffer* t_buffer, int offset);
+void cursor_right_buffer(text_buffer* t_buffer, int offset);
 
 void update_relative_cursor(text_buffer* t_buffer, int direction);
 void update_buffer_viewable_front(text_buffer* t_buffer, int direction);
 
-int text_cursor_at_eof(text_buffer* t_buffer);
+int buffer_cursor_at_eof(text_buffer* t_buffer);
 
 int next_break(text_buffer* text, int direction);
 
-void free_text_buffer(text_buffer* t_buffer);
-void hello(text_buffer* t_buffer);
+void free_buffer(text_buffer* t_buffer);
 
 #endif

@@ -79,13 +79,13 @@ void handle_terminal_cursor(screen* scr, text_buffer* text, int movement) {
   wmove(t_window, new_cursor_y, new_cursor_x);
 }
 
-void handle_terminal_format(screen* scr, text_buffer* text, int operation) {
+void handle_terminal_ops(screen* scr, text_buffer* text, int operation) {
   WINDOW* t_window = scr->t_window;
 
   int cursor_y, cursor_x;
   getyx(t_window, cursor_y, cursor_x);
 
-  char* focused_string = get_focused_string(text);
+  char* focused_string = buffer_to_string(text);
   char* bottom_string = focused_string + (text->gap_front - text->buffer);
   char* format_string;
   
@@ -106,13 +106,13 @@ void handle_terminal_format(screen* scr, text_buffer* text, int operation) {
   
   wprintw(t_window, format_string, bottom_string);
   print_attr(scr->boundary, t_window, COLOR_PAIR(THEME_BOUNDARY));
-  print_line_count(scr, text);
+  display_cursor_location(scr, text);
   wmove(t_window, cursor_y, cursor_x);
   wrefresh(t_window);
   free(focused_string);
 }
 
-void print_line_count(screen* scr, text_buffer* text) {
+void display_cursor_location(screen* scr, text_buffer* text) {
   WINDOW* c_window = scr->c_window;
   char* coordinate_format = "L:%d C:%d";
 
@@ -149,7 +149,7 @@ void kill(screen* scr, text_buffer* text) {
   
   free(scr->boundary);
   free(scr);
-  free_text_buffer(text);
+  free_buffer(text);
   
   system("clear");
   exit(0);
