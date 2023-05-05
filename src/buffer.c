@@ -184,7 +184,7 @@ void update_buffer_viewable_front(text_buffer* t_buffer, int direction) {
        Ex. hello\nworld => 'w' is at the offset location
        Ex. helloworld   => 'w' is at the offset location (assuming o is at the edge)
      */
-    if (*(--tmp) == LINE_FEED_CHAR) tmp -= 2;
+    if (*(--tmp) == LINE_FEED_CHAR) --tmp;
 
 
     /* get the entire paragraph */
@@ -216,7 +216,7 @@ void update_buffer_viewable_front(text_buffer* t_buffer, int direction) {
        hello_world
        
      */
-    if (offset == 0) offset = t_buffer->terminal_x;
+    if (offset == 0 && *tmp != LINE_FEED_CHAR) offset = t_buffer->terminal_x;
 
     /* new offset */
     t_buffer->buffer_viewable_front = t_buffer->buffer_viewable_front - offset;
