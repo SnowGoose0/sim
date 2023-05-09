@@ -116,7 +116,9 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
       break;
 
     case 'q':
-      write_file(file_data, buffer_to_string(text));
+      char* buffer = buffer_to_string(text);
+      write_file(file_data, buffer);
+      free(buffer);
       kill(scr, text);
       break;
       
@@ -149,12 +151,12 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       wrefresh(c_window);
       break;
 
-    case CTRL('-'):
+    case CTRL('k'):
       scroll_screen(scr, text, SEARCH_DIRECTION_BACKWARD);
       wrefresh(t_window);
       break;
 
-    case CTRL('='):
+    case CTRL('l'):
       scroll_screen(scr, text, SEARCH_DIRECTION_FORWARD);
       wrefresh(t_window);
       break;
@@ -232,13 +234,15 @@ void scroll_screen(screen* scr, text_buffer* text, int direction) {
     cursor_up(scr, text);
   }
 
-  focus_string = buffer_to_string(text) + text->buffer_viewable_front;
+  char* buffer = buffer_to_string(text);
+  focus_string = buffer + text->buffer_viewable_front;
 
   wclear(scr->t_window);
   mvwprintw(scr->t_window, 0, 0, "%s", focus_string);
   print_attr(scr->boundary, scr->t_window, COLOR_PAIR(THEME_BOUNDARY));
 
   wmove(scr->t_window, cursor_y, text->cursor_offset);
+  free(buffer);
 }
 
 void cursor_up(screen* scr, text_buffer* text) {

@@ -221,6 +221,8 @@ void update_buffer_viewable_front(text_buffer* t_buffer, int direction) {
     /* new offset */
     t_buffer->buffer_viewable_front = t_buffer->buffer_viewable_front - offset;
   }
+
+  free(start);
 }
 
 int buffer_cursor_at_eof(text_buffer* t_buffer) {
