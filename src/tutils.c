@@ -101,6 +101,11 @@ void handle_terminal_cursor(screen* scr, text_buffer* text, int movement) {
       new_cursor_x = text->cursor_offset;
       break;
 
+    case MOVEMENT_UP:
+      new_cursor_y = MAX(0, cursor_y - 1);
+      new_cursor_x = cursor_x;      
+      break;
+
     default:
       new_cursor_y = cursor_y;
       new_cursor_x = cursor_x;

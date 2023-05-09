@@ -49,13 +49,13 @@ int main(int argc, char** argv) {
     *(c_time_string + strcspn(c_time_string, "\n")) = 0;
     
     printf(HELP_DESCR, c_time_string);
-    
+    printf(SPLASH);    
     exit(0);
   }
 
   if (ABS((n_flag ^ e_flag) - 1) | ur_flag) {
     fprintf(stderr, INVALID_FLAG_DESCR);
-    
+    printf(SPLASH);
     exit(1);
   }
 
@@ -105,7 +105,7 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
     case 'i':
       scr->mode = INSERT_MODE;
       werase(c_window);
-      print_attr("[ INSERT ]", c_window, A_BOLD);
+      print_attr("-- INSERT --", c_window, A_BOLD);
       wrefresh(c_window);
 
       wmove(t_window, scr->s_cursor_y, scr->s_cursor_x);
@@ -142,39 +142,39 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       wmove(c_window, 0, 0);
       wclear(c_window);
       
-      char* debug_string = buffer_to_dstring(text);
-      wprintw(c_window, "%s", debug_string);
-      free(debug_string);
+      //char* debug_string = buffer_to_dstring(text);
+      //wprintw(c_window, "%s", debug_string);
+      //free(debug_string);
       
       wrefresh(c_window);
       break;
 
-    case '<':
+    case CTRL('-'):
       scroll_screen(scr, text, SEARCH_DIRECTION_BACKWARD);
       wrefresh(t_window);
       break;
 
-    case '>':
+    case CTRL('='):
       scroll_screen(scr, text, SEARCH_DIRECTION_FORWARD);
       wrefresh(t_window);
       break;
 
-    case '_':
+    case CTRL('p'):
       cursor_up(scr, text);
       wrefresh(t_window);
       break;
 
-    case '+':
+    case CTRL('n'):
       cursor_down(scr, text);
       wrefresh(t_window);
       break;
 
-    case '-':
+    case CTRL('b'):
       cursor_left(scr, text);
       wrefresh(t_window);
       break;
 
-    case '=':
+    case CTRL('f'):
       cursor_right(scr, text);
       wrefresh(t_window);
       break;
@@ -211,26 +211,33 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
 }
 
 void scroll_screen(screen* scr, text_buffer* text, int direction) {
-  int cursor_y, cursor_x;
-  getyx(scr->t_window, cursor_y, cursor_x);
+  int cursor_y = getcury(scr->t_window);
   
   char* focus_string;
-  char* viewable_prev = text->buffer_viewable_front;
+  int viewable_prev = text->buffer_viewable_front;
+  
   update_buffer_viewable_front(text, direction);
 
   if (direction == SEARCH_DIRECTION_FORWARD) {
+    int text_cursor_y = text->cursor_line;
     cursor_down(scr, text);
+
+    if (text->cursor_line == text_cursor_y) {
+      handle_terminal_cursor(scr, text, MOVEMENT_UP);
+      cursor_y = getcury(scr->t_window);
+    }
+      
   } else {
     if (text->buffer_viewable_front == viewable_prev) return;
-    
     cursor_up(scr, text);
   }
-  
+
   focus_string = buffer_to_string(text) + text->buffer_viewable_front;
 
   wclear(scr->t_window);
   mvwprintw(scr->t_window, 0, 0, "%s", focus_string);
   print_attr(scr->boundary, scr->t_window, COLOR_PAIR(THEME_BOUNDARY));
+
   wmove(scr->t_window, cursor_y, text->cursor_offset);
 }
 

@@ -24,6 +24,8 @@
 #define LEGAL_CHAR_LOW        0x20
 #define LEGAL_CHAR_UP         0x7E
 
+#define CTRL(x)               (x & 0x1F)
+
 #include "buffer.h"
 
 typedef struct {
