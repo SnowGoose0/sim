@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
   wbkgd(scr->t_window, COLOR_PAIR(THEME_WINDOW));
   wbkgd(scr->c_window, COLOR_PAIR(THEME_WINDOW));
 
-  // event loop
+  /* Event Loop */
   while(1) {
     ch = getch();
 
@@ -91,40 +91,73 @@ int main(int argc, char** argv) {
 }
 
 screen* init_screen() {
-  screen* new_screen = (screen*) malloc(sizeof(screen));
-  new_screen->mode = COMMAND_MODE;
+  int terminal_y, terminal_x;
+  getmaxyx(stdscr, terminal_y, terminal_x);
   
-  init_render_window(new_screen, file_data);
-  return new_screen;
+  char* file_indicator;
+  screen* scr = (screen*) malloc(sizeof(screen));
+  char* boundary = generate_boundary(terminal_y);
+
+  WINDOW* text_window = newwin(terminal_y - 1, terminal_x, 0, 0);
+  WINDOW* command_window = newwin(1, terminal_x, terminal_y - 1, 0);
+  refresh();
+  
+  /* skip the first line feed */
+  wprintw(text_window, "%s", file_data->file_content);
+  print_attr(boundary, text_window, COLOR_PAIR(THEME_BOUNDARY));
+  wrefresh(text_window);
+
+  wmove(command_window, 0, 0);
+  file_indicator = file_data->file_name != NULL ? file_data->file_name : file_data->file_path;
+  cprint_command_attr(command_window, A_BOLD, "\"%s\" %dB", file_indicator, file_data->size);
+  wrefresh(command_window);
+  
+  scr->mode = COMMAND_MODE;
+  scr->t_window = text_window;
+  scr->c_window = command_window;
+  scr->terminal_y = terminal_y;
+  scr->terminal_x = terminal_x;
+  scr->s_cursor_y = 0;
+  scr->s_cursor_x = 0;
+  scr->boundary = boundary;
+  
+  return scr;
 }
 
 void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
+  char* buffer = buffer = buffer_to_string(text);;
   WINDOW* t_window = scr->t_window;
   WINDOW* c_window = scr->c_window;
-    switch(ch) {
+  
+  switch(ch) {
+
     case 'i':
       scr->mode = INSERT_MODE;
-      werase(c_window);
-      print_attr("-- INSERT --", c_window, A_BOLD);
-      wrefresh(c_window);
-
+      cprint_command_attr(scr->c_window, A_BOLD, "%s", "-- INSERT --");
       wmove(t_window, scr->s_cursor_y, scr->s_cursor_x);
+      
+      wrefresh(c_window);
       wrefresh(t_window);
       break;
-
+      
     case 'w':
+      write_file(file_data, buffer);
+      break;
+
+    case CTRL('w'):
+      write_file(file_data, buffer);
+      free(buffer);
       break;
 
     case 'q':
-      char* buffer = buffer_to_string(text);
-      write_file(file_data, buffer);
-      free(buffer);
       kill(scr, text);
       break;
       
     default:
       break;
   }
+
+  if (buffer != NULL) free(buffer);
 }
  
 void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
@@ -230,6 +263,7 @@ void scroll_screen(screen* scr, text_buffer* text, int direction) {
     }
       
   } else {
+    
     if (text->buffer_viewable_front == viewable_prev) return;
     cursor_up(scr, text);
   }

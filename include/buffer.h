@@ -11,6 +11,7 @@
 #define EMPTY_FILE                     "\0"
 
 typedef struct {
+  short modified;
   char* buffer;
   char* gap_front;
   char* gap_end;

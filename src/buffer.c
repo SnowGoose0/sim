@@ -13,6 +13,7 @@ text_buffer* init_text_buffer(char* buffer, int terminal_x) {
   int text_buffer_length = buffer_length + BUFF_GAP_SIZE;
 
   text_buffer* new_buffer = (text_buffer*) calloc(1, sizeof(text_buffer));
+  new_buffer->modified = 0;
   new_buffer->buffer = (char*) calloc(text_buffer_length, sizeof(char));
   new_buffer->gap_front = new_buffer->buffer;
   new_buffer->gap_end = new_buffer->buffer + BUFF_GAP_SIZE;
@@ -38,6 +39,7 @@ void insertion_buffer(text_buffer* t_buffer, char symbol) {
   char* dest = t_buffer->gap_front;
   *dest = symbol;
   t_buffer->gap_front++;
+  t_buffer->modified = 1;
 
   update_relative_cursor(t_buffer, SEARCH_DIRECTION_FORWARD);
 }
@@ -46,6 +48,7 @@ void insertion_buffer(text_buffer* t_buffer, char symbol) {
 void deletion_buffer(text_buffer* t_buffer) {
   if (t_buffer->buffer != t_buffer->gap_front) {
     t_buffer->gap_front--;
+    t_buffer->modified = 1;
 
     update_relative_cursor(t_buffer, SEARCH_DIRECTION_BACKWARD);
   }

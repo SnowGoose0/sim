@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "futils.h"
 
@@ -17,6 +18,7 @@ file* new_file(char* file_indicator, int file_existence) {
       
     f->file_path = file_indicator;
     f->file_content = read_file(f);
+    f->size = strlen(f->file_content) + 1;
     
   } else {
     char* tmp = file_indicator;
@@ -34,6 +36,7 @@ file* new_file(char* file_indicator, int file_existence) {
 
     f->file_name = file_indicator;
     f->file_content = EMPTY_FILE;
+    f->size = 0;
   }
 
   return f;
@@ -57,6 +60,8 @@ int write_file(file* file_data, char* file_string) {
 
 char* read_file(file* file_data) {
   char* file_path = file_data->file_path;
+  int file_size;
+  char* buffer;
   
   if (file_data->file_path == NULL)
     return NULL;
@@ -66,9 +71,6 @@ char* read_file(file* file_data) {
     fprintf(stderr, "Error opening file at: %s\n", file_path);
     exit(1);
   }
-
-  int file_size;
-  char* buffer;
 
   fseek(fp, 0L, SEEK_END);
   file_size = ftell(fp);

@@ -13,6 +13,7 @@ typedef struct {
   char* file_name;
   char* file_path;
   char* file_content; /* initially read */
+  int size;
 } file;
 
 file* new_file(char* indicator, int file_existence);

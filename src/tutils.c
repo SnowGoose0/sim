@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdarg.h>
 #include <ncurses.h>
 
 #include "tutils.h"
@@ -6,41 +7,6 @@
 #include "colors.h"
 #include "buffer.h"
 
-/**
- * Initializes the render window for the text editor.
- *
- * @param scr a pointer to a screen struct that contains information about the terminal window
- * @param file_data a pointer to a file struct that contains the file to be edited
- */
-void init_render_window(screen* scr, file* file_data) {
-  int terminal_y, terminal_x;
-  getmaxyx(stdscr, terminal_y, terminal_x);
-
-  WINDOW* text_window = newwin(terminal_y - 1, terminal_x, 0, 0);
-  WINDOW* command_window = newwin(1, terminal_x, terminal_y - 1, 0);
-  refresh();
-
-  keypad(text_window, TRUE);
-  keypad(command_window, TRUE);
-
-  char* boundary = generate_boundary(terminal_y);
-  
-  /* skip the first line feed */
-  wprintw(text_window, file_data->file_content);
-  print_attr(boundary, text_window, COLOR_PAIR(THEME_BOUNDARY));
-  wrefresh(text_window);
-
-  wmove(command_window, 0, 0);
-  wrefresh(command_window);
-
-  scr->t_window = text_window;
-  scr->c_window = command_window;
-  scr->terminal_y = terminal_y;
-  scr->terminal_x = terminal_x;
-  scr->s_cursor_y = 0;
-  scr->s_cursor_x = 0;
-  scr->boundary = boundary;
-}
 
 /**
  * Generates the top and bottom boundaries of the terminal window as a character array.
@@ -191,6 +157,34 @@ void print_attr(char* content, WINDOW* win, chtype attr) {
   wattron(win, attr);
   wprintw(win, "%s", content);
   wattroff(win, attr);
+}
+
+/**
+ * Prints content with the specified attribute to the command window
+ *
+ * @param content a pointer to a character array containing the text to be printed
+ * @param screen object
+ * @param attr the attribute to be applied to the printed text
+ */
+void cprint_command_attr(WINDOW* c_window, chtype attr, const char* format, ...) {
+  werase(c_window);
+  wattron(c_window, attr);
+
+  va_list args;
+  va_start(args, format);
+  vw_printw(c_window, format, args);
+  va_end(args);
+
+  wattroff(c_window, attr);
+}
+
+/**
+ * Prints content with the specified attribute to the command window but clears first
+ */
+void print_command_attr(char* content, screen* scr, chtype attr) {
+  WINDOW* c_window = scr->c_window;
+  print_attr(content, c_window, attr);
+  wrefresh(c_window);
 }
 
 /**
