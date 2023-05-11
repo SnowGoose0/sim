@@ -47,12 +47,11 @@ screen* init_screen() {
 }
 
 void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
-  char* buffer = buffer = buffer_to_string(text);;
+  char* buffer = buffer = buffer_to_string(text);
   WINDOW* t_window = scr->t_window;
   WINDOW* c_window = scr->c_window;
   
   switch(ch) {
-
     case 'i':
       scr->mode = INSERT_MODE;
       cprint_command_attr(c_window, A_BOLD, "%s", INSERT_DESCR);
@@ -93,20 +92,18 @@ void handle_exit(screen* scr, text_buffer* text, char* buffer) {
     int c_ch;
     cprint_command_attr(c_window, A_REVERSE, "%s", MODIFIED_DESCR);
 
-    while (c_ch = wgetch(c_window)) {
+    while ((c_ch = wgetch(c_window)) != '!') {
       if ((c_ch == 'n')) {
 	kill(scr, text);
 	    
       } else if (c_ch == 'y') {
 	write_file(file_data, buffer);
 	free(buffer);
-	kill(scr, text);
-	    
-      } else if (c_ch == '!') {
-	display_file_desc(file_data, c_window, text->modified);
-	break;
+	kill(scr, text);	   
       }
     }
+
+    display_file_desc(file_data, c_window, text->modified);
   }
 
   else kill(scr, text);
@@ -322,17 +319,27 @@ void insert_next_line(text_buffer* text, screen* scr) {
 void delete_character(text_buffer* text, WINDOW* win, screen* scr) {
   char ch = *(text->gap_front - 1);
   int movement = ch != LINE_FEED_CHAR ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN;
+  
   int cursor_y, cursor_x;
-
   getyx(win, cursor_y, cursor_x);
 
-  if ((!cursor_y && !cursor_x) && text->gap_front != text->buffer)
+  if ((!cursor_y && !cursor_x) && text->gap_front != text->buffer) {
+    int c_offset = text->cursor_offset;
+    int c_line = text->cursor_line;
+    
     scroll_screen(scr, text, SEARCH_DIRECTION_BACKWARD);
+
+    /* unscroll the terminal and text cursor */
+    //wmove(scr->t_window, cursor_y + 1, cursor_x);
+    while (text->cursor_offset != c_offset && text->cursor_line != c_line)
+      cursor_right(scr, text);
+  }
 
   deletion_buffer(text);
   handle_terminal_cursor(scr, text, movement);
-  wdelch(win);
+  wdelch(win); 
   handle_terminal_ops(scr, text, OPERATION_DELETE);
+
 }
 
 int main(int argc, char** argv) {
