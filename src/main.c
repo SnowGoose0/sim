@@ -15,86 +15,10 @@
 
 file* file_data;
 
-int main(int argc, char** argv) {
-
-  /*  Handle program options  */
-
-  int opt = 0;
-  int n_flag = 0, e_flag = 0, h_flag = 0, ur_flag = 0;
-
-  while ((opt = getopt(argc, argv, ARGS)) != -1) {
-    switch(opt) {
-      case 'n':
-	n_flag = 1;
-	file_data = new_file(optarg, FILE_NOT_EXIST);
-	break;
-	
-      case 'e':
-	e_flag = 1;
-	file_data = new_file(optarg, FILE_EXIST);
-	break;
-
-      case 'h':
-	h_flag = 1;
-	break;
-
-      default:
-	ur_flag = 1;
-    }
-  }
-
-  if (h_flag) {
-    time_t c_time = time(NULL);
-    char* c_time_string = ctime(&c_time);
-    *(c_time_string + strcspn(c_time_string, "\n")) = 0;
-    
-    printf(HELP_DESCR, c_time_string);
-    printf(SPLASH);    
-    exit(0);
-  }
-
-  if (ABS((n_flag ^ e_flag) - 1) | ur_flag) {
-    fprintf(stderr, INVALID_FLAG_DESCR);
-    printf(SPLASH);
-    exit(1);
-  }
-
-  /*  Handle screen initialization  */
-  
-  initscr();
-  start_color();
-  mousemask(0, NULL);
-  noecho();
-  raw();
-
-  init_pair(THEME_BOUNDARY, COLOR_MAGENTA, COLOR_BLACK);
-  init_pair(THEME_WINDOW, COLOR_WHITE, COLOR_BLACK);
-
-  int ch = 0;
-  screen* scr = init_screen();
-  text_buffer* text = init_text_buffer(file_data->file_content, scr->terminal_x);
-
-  wbkgd(scr->t_window, COLOR_PAIR(THEME_WINDOW));
-  wbkgd(scr->c_window, COLOR_PAIR(THEME_WINDOW));
-
-  /* Event Loop */
-  while(1) {
-    ch = getch();
-
-    if (scr->mode == COMMAND_MODE)
-      handle_commands_inputs(scr, text, ch);
-    else
-      handle_text_inputs(scr, text, ch);
-  }
-  
-  kill(scr, text);
-}
-
 screen* init_screen() {
   int terminal_y, terminal_x;
   getmaxyx(stdscr, terminal_y, terminal_x);
   
-  char* file_indicator;
   screen* scr = (screen*) malloc(sizeof(screen));
   char* boundary = generate_boundary(terminal_y);
 
@@ -108,9 +32,7 @@ screen* init_screen() {
   wrefresh(text_window);
 
   wmove(command_window, 0, 0);
-  file_indicator = file_data->file_name != NULL ? file_data->file_name : file_data->file_path;
-  cprint_command_attr(command_window, A_BOLD, "\"%s\" %dB", file_indicator, file_data->size);
-  wrefresh(command_window);
+  display_file_desc(file_data, command_window);
   
   scr->mode = COMMAND_MODE;
   scr->t_window = text_window;
@@ -142,14 +64,33 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
       
     case 'w':
       write_file(file_data, buffer);
+      text->modified = 0;
       break;
 
     case CTRL('w'):
       write_file(file_data, buffer);
       free(buffer);
+      kill(scr, text);
       break;
 
     case 'q':
+      if (text->modified) {
+	int c_ch;
+	cprint_command_attr(c_window, A_REVERSE, "%s", MODIFIED_DESCR);
+
+	while (c_ch = wgetch(c_window)) {
+	  if ((c_ch == 'n')) {
+	    display_file_desc(file_data, c_window);
+	    free(buffer);
+	    return;
+	  } else if (c_ch == 'y') {
+            write_file(file_data, buffer);
+            free(buffer);
+            kill(scr, text);
+	  }
+	}
+      }
+
       kill(scr, text);
       break;
       
@@ -175,13 +116,7 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       scr->s_cursor_x = cursor_x;
       
       wmove(c_window, 0, 0);
-      wclear(c_window);
-      
-      //char* debug_string = buffer_to_dstring(text);
-      //wprintw(c_window, "%s", debug_string);
-      //free(debug_string);
-      
-      wrefresh(c_window);
+      display_file_desc(file_data, c_window);
       break;
 
     case CTRL('k'):
@@ -195,12 +130,16 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       break;
 
     case CTRL('p'):
-      cursor_up(scr, text);
+      if (cursor_y != 0) cursor_up(scr, text);
+      else scroll_screen(scr, text, SEARCH_DIRECTION_BACKWARD);
+      
       wrefresh(t_window);
       break;
 
     case CTRL('n'):
-      cursor_down(scr, text);
+      if (cursor_y < scr->terminal_y - 2) cursor_down(scr, text);
+      else scroll_screen(scr, text, SEARCH_DIRECTION_FORWARD);
+      
       wrefresh(t_window);
       break;
 
@@ -349,9 +288,90 @@ void insert_next_line(text_buffer* text, screen* scr) {
 void delete_character(text_buffer* text, WINDOW* win, screen* scr) {
   char ch = *(text->gap_front - 1);
   int movement = ch != LINE_FEED_CHAR ? MOVEMENT_BACKWARD : MOVEMENT_PREV_LN;
+  int cursor_y, cursor_x;
+
+  getyx(win, cursor_y, cursor_x);
+
+  if ((!cursor_y && !cursor_x) && text->gap_front != text->buffer)
+    scroll_screen(scr, text, SEARCH_DIRECTION_BACKWARD);
 
   deletion_buffer(text);
   handle_terminal_cursor(scr, text, movement);
   wdelch(win);
   handle_terminal_ops(scr, text, OPERATION_DELETE);
+}
+
+int main(int argc, char** argv) {
+
+  /*  Handle program options  */
+
+  int opt = 0;
+  int n_flag = 0, e_flag = 0, h_flag = 0, ur_flag = 0;
+
+  while ((opt = getopt(argc, argv, ARGS)) != -1) {
+    switch(opt) {
+      case 'n':
+	n_flag = 1;
+	file_data = new_file(optarg, FILE_NOT_EXIST);
+	break;
+	
+      case 'e':
+	e_flag = 1;
+	file_data = new_file(optarg, FILE_EXIST);
+	break;
+
+      case 'h':
+	h_flag = 1;
+	break;
+
+      default:
+	ur_flag = 1;
+    }
+  }
+
+  if (h_flag) {
+    time_t c_time = time(NULL);
+    char* c_time_string = ctime(&c_time);
+    *(c_time_string + strcspn(c_time_string, "\n")) = 0;
+    
+    printf(HELP_DESCR, c_time_string);
+    printf(SPLASH);    
+    exit(0);
+  }
+
+  if (ABS((n_flag ^ e_flag) - 1) | ur_flag) {
+    fprintf(stderr, INVALID_FLAG_DESCR);
+    printf(SPLASH);
+    exit(1);
+  }
+
+  /*  Handle screen initialization  */
+  
+  initscr();
+  start_color();
+  mousemask(0, NULL);
+  noecho();
+  raw();
+
+  init_pair(THEME_BOUNDARY, COLOR_MAGENTA, COLOR_BLACK);
+  init_pair(THEME_WINDOW, COLOR_WHITE, COLOR_BLACK);
+
+  screen* scr = init_screen();
+  text_buffer* text = init_text_buffer(file_data->file_content, scr->terminal_x);
+  int ch = 0;
+
+  wbkgd(scr->t_window, COLOR_PAIR(THEME_WINDOW));
+  wbkgd(scr->c_window, COLOR_PAIR(THEME_WINDOW));
+
+  /* Event Loop */
+  for(;;) {
+    ch = getch();
+
+    if (scr->mode == COMMAND_MODE)
+      handle_commands_inputs(scr, text, ch);
+    else
+      handle_text_inputs(scr, text, ch);
+  }
+  
+  kill(scr, text);
 }

@@ -25,6 +25,19 @@ char* generate_boundary(int terminal_y) {
   return boundary;
 }
 
+char* display_file_desc(file* file_data, WINDOW* c_window) {
+  char* file_indicator;
+  int size = file_data->size;
+
+  if (file_data->file_name != NULL)
+    file_indicator = file_data->file_name;
+  else
+    file_indicator = file_data->file_path;
+  
+  cprint_command_attr(c_window, A_BOLD, "\"%s\" %dB", file_indicator, size);
+  wrefresh(c_window);
+}
+
 /**
  * Handles movement of the cursor in the terminal window.
  *

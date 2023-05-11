@@ -15,6 +15,7 @@
 void kill(screen* scr, text_buffer* text);
 
 char* generate_boundary(int terminal_y);
+char* display_file_desc(file* file_data, WINDOW* c_window);
 
 void handle_terminal_cursor(screen* scr, text_buffer* text, int movement);
 void handle_terminal_ops(screen* scr, text_buffer* text, int operation);
