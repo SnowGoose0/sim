@@ -18,7 +18,7 @@ file* new_file(char* file_indicator, int file_existence) {
       
     f->file_path = file_indicator;
     f->file_content = read_file(f);
-    f->size = strlen(f->file_content) + 1;
+    f->size = strlen(f->file_content);
     
   } else {
     char* tmp = file_indicator;
@@ -43,17 +43,25 @@ file* new_file(char* file_indicator, int file_existence) {
 }
 
 int write_file(file* file_data, char* file_string) {
+  char* new_file_content;
+  int new_size = strlen(file_string);
   char* file_name = file_data->file_name;
   char* file_path = file_data->file_path;
   
   char* file_indicator = file_name != NULL ? file_name : file_path;
-  int status;
   FILE* fp;
+  int status;
 
   fp = fopen(file_indicator, "w");
   status = fprintf(fp, "%s", file_string);
   
   fclose(fp);
+
+  new_file_content = (char*) calloc((new_size + 1), sizeof(char));
+  strcpy(new_file_content, file_string);
+  
+  file_data->file_content = new_file_content;
+  file_data->size = new_size;
   
   return status;
 }

@@ -32,7 +32,7 @@ screen* init_screen() {
   wrefresh(text_window);
 
   wmove(command_window, 0, 0);
-  display_file_desc(file_data, command_window);
+  display_file_desc(file_data, command_window, 0);
   
   scr->mode = COMMAND_MODE;
   scr->t_window = text_window;
@@ -55,7 +55,7 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
 
     case 'i':
       scr->mode = INSERT_MODE;
-      cprint_command_attr(scr->c_window, A_BOLD, "%s", "-- INSERT --");
+      cprint_command_attr(c_window, A_BOLD, "%s", INSERT_DESCR);
       wmove(t_window, scr->s_cursor_y, scr->s_cursor_x);
       
       wrefresh(c_window);
@@ -65,33 +65,18 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
     case 'w':
       write_file(file_data, buffer);
       text->modified = 0;
+      cprint_command_attr(c_window, COLOR_PAIR(THEME_OPERATION), "%dB %s", file_data->size, WRITTEN_DESCR);
+
+      wrefresh(c_window);
       break;
 
     case CTRL('w'):
       write_file(file_data, buffer);
-      free(buffer);
       kill(scr, text);
       break;
 
     case 'q':
-      if (text->modified) {
-	int c_ch;
-	cprint_command_attr(c_window, A_REVERSE, "%s", MODIFIED_DESCR);
-
-	while (c_ch = wgetch(c_window)) {
-	  if ((c_ch == 'n')) {
-	    display_file_desc(file_data, c_window);
-	    free(buffer);
-	    return;
-	  } else if (c_ch == 'y') {
-            write_file(file_data, buffer);
-            free(buffer);
-            kill(scr, text);
-	  }
-	}
-      }
-
-      kill(scr, text);
+      handle_exit(scr, text, buffer);
       break;
       
     default:
@@ -99,6 +84,32 @@ void handle_commands_inputs(screen* scr, text_buffer* text, int ch) {
   }
 
   if (buffer != NULL) free(buffer);
+}
+
+void handle_exit(screen* scr, text_buffer* text, char* buffer) {
+  WINDOW* c_window = scr->c_window;
+  
+  if (text->modified) {
+    int c_ch;
+    cprint_command_attr(c_window, A_REVERSE, "%s", MODIFIED_DESCR);
+
+    while (c_ch = wgetch(c_window)) {
+      if ((c_ch == 'n')) {
+	kill(scr, text);
+	    
+      } else if (c_ch == 'y') {
+	write_file(file_data, buffer);
+	free(buffer);
+	kill(scr, text);
+	    
+      } else if (c_ch == '!') {
+	display_file_desc(file_data, c_window, text->modified);
+	break;
+      }
+    }
+  }
+
+  else kill(scr, text);
 }
  
 void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
@@ -116,7 +127,7 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
       scr->s_cursor_x = cursor_x;
       
       wmove(c_window, 0, 0);
-      display_file_desc(file_data, c_window);
+      display_file_desc(file_data, c_window, text->modified);
       break;
 
     case CTRL('k'):
@@ -150,6 +161,16 @@ void handle_text_inputs(screen* scr, text_buffer* text, int ch) {
 
     case CTRL('f'):
       cursor_right(scr, text);
+      wrefresh(t_window);
+      break;
+
+    case CTRL('e'):
+      cursor_extreme(scr, text, SEARCH_DIRECTION_FORWARD);
+      wrefresh(t_window);
+      break;
+
+    case CTRL('a'):
+      cursor_extreme(scr, text, SEARCH_DIRECTION_BACKWARD);
       wrefresh(t_window);
       break;
 
@@ -267,6 +288,19 @@ void cursor_right(screen* scr, text_buffer* text) {
   handle_terminal_cursor(scr, text, movement);
 }
 
+void cursor_extreme(screen* scr, text_buffer* text, int direction) {
+  int offset = next_break(text, direction);
+  int i = 0;
+
+  for (; i < offset; ++i) {
+    if (direction == SEARCH_DIRECTION_FORWARD)
+      cursor_right(scr, text);
+
+    else if (direction == SEARCH_DIRECTION_BACKWARD)
+      cursor_left(scr, text);
+  }
+}
+
 void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
   if (LEGAL_CHAR_LOW <= ch && LEGAL_CHAR_UP >= ch) {
     int operation = OPERATION_INSERT;
@@ -355,6 +389,7 @@ int main(int argc, char** argv) {
 
   init_pair(THEME_BOUNDARY, COLOR_MAGENTA, COLOR_BLACK);
   init_pair(THEME_WINDOW, COLOR_WHITE, COLOR_BLACK);
+  init_pair(THEME_OPERATION, COLOR_BLUE, COLOR_BLACK);
 
   screen* scr = init_screen();
   text_buffer* text = init_text_buffer(file_data->file_content, scr->terminal_x);

@@ -25,16 +25,21 @@ char* generate_boundary(int terminal_y) {
   return boundary;
 }
 
-char* display_file_desc(file* file_data, WINDOW* c_window) {
+char* display_file_desc(file* file_data, WINDOW* c_window, short modified) {
   char* file_indicator;
   int size = file_data->size;
 
   if (file_data->file_name != NULL)
     file_indicator = file_data->file_name;
+  
   else
     file_indicator = file_data->file_path;
   
   cprint_command_attr(c_window, A_BOLD, "\"%s\" %dB", file_indicator, size);
+
+  if (modified)
+    print_command_attr(c_window, A_BOLD, "*");
+
   wrefresh(c_window);
 }
 
@@ -194,8 +199,7 @@ void cprint_command_attr(WINDOW* c_window, chtype attr, const char* format, ...)
 /**
  * Prints content with the specified attribute to the command window but clears first
  */
-void print_command_attr(char* content, screen* scr, chtype attr) {
-  WINDOW* c_window = scr->c_window;
+ void print_command_attr(WINDOW* c_window, chtype attr, const char* content) {
   print_attr(content, c_window, attr);
   wrefresh(c_window);
 }

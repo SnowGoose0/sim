@@ -15,7 +15,7 @@
 void kill(screen* scr, text_buffer* text);
 
 char* generate_boundary(int terminal_y);
-char* display_file_desc(file* file_data, WINDOW* c_window);
+char* display_file_desc(file* file_data, WINDOW* c_window, short modified);
 
 void handle_terminal_cursor(screen* scr, text_buffer* text, int movement);
 void handle_terminal_ops(screen* scr, text_buffer* text, int operation);
@@ -25,6 +25,6 @@ void display_boundaries(int cur_line, int terminal_y, WINDOW* t_window);
 void print_attr(char* content, WINDOW* win, chtype attr);
 void vprint_attr(WINDOW* win, chtype attr, char* content, ...);
 void cprint_command_attr(WINDOW* c_window, chtype attr, const char* content, ...);
-void print_command_attr(char* content, screen* scr, chtype attr);
+void print_command_attr(WINDOW* c_window, chtype attr, const char* content);
 
 #endif
