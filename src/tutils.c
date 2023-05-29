@@ -134,6 +134,7 @@ void handle_terminal_ops(screen* scr, text_buffer* text, int operation) {
   print_attr(scr->boundary, t_window, COLOR_PAIR(THEME_BOUNDARY));
   wmove(t_window, cursor_y, cursor_x);
   wrefresh(t_window);
+  
   free(focused_string);
 }
 
