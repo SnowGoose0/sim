@@ -313,22 +313,16 @@ void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
 void insert_next_line(text_buffer* text, screen* scr) {
   int cursor_y, cursor_x;
   getyx(scr->t_window, cursor_y, cursor_x);
+  
   insertion_buffer(text, LINE_FEED_CHAR);
+  handle_terminal_ops(scr, text, OPERATION_NEXT_LN);
+  handle_terminal_cursor(scr, text, MOVEMENT_NEXT_LN);
 
   if (cursor_y == scr->terminal_y - 8) {
     int c_offset = text->cursor_offset;
     int c_line = text->cursor_line;
-    
+ 
     scroll_screen(scr, text, SEARCH_DIRECTION_FORWARD);
-
-    /* unscroll the terminal and text cursor */
-    // wmove(scr->t_window, cursor_y + 1, cursor_x);
-
-    /*    while (text->cursor_offset != c_offset && text->cursor_line != c_line)
-      cursor_left(scr, text); */
-  } else {
-    handle_terminal_ops(scr, text, OPERATION_NEXT_LN);
-    handle_terminal_cursor(scr, text, MOVEMENT_NEXT_LN);
   }
 }
 
