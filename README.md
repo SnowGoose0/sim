@@ -3,7 +3,7 @@
 
 **Sim** is a terminal-based text editor that immitates some of the *bare bones* text editing features of [*Vim*](https://github.com/vim/vim). 
 
-Written in the **C language** using the **new curses (ncurses)** library for the TUI. 
+Written in the **C language** using the **ncurses** library for the TUI. 
 
 &nbsp;
 
