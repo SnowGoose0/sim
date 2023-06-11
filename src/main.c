@@ -317,13 +317,6 @@ void insert_next_line(text_buffer* text, screen* scr) {
   insertion_buffer(text, LINE_FEED_CHAR);
   handle_terminal_ops(scr, text, OPERATION_NEXT_LN);
   handle_terminal_cursor(scr, text, MOVEMENT_NEXT_LN);
-
-  if (cursor_y == scr->terminal_y - 8) {
-    int c_offset = text->cursor_offset;
-    int c_line = text->cursor_line;
- 
-    scroll_screen(scr, text, SEARCH_DIRECTION_FORWARD);
-  }
 }
 
 void delete_character(text_buffer* text, WINDOW* win, screen* scr) {
