@@ -299,10 +299,21 @@ void cursor_extreme(screen* scr, text_buffer* text, int direction) {
 }
 
 void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
+  int rescroll_threshold = 5;
   int cursor_y, cursor_x;
   getyx(win, cursor_y, cursor_x);
-  if (cursor_y >= scr->terminal_y - 3) {
-    scroll_screen(scr, text, SEARCH_DIRECTION_FORWARD);
+
+  /* check if current inserting position is at the bottom (with a certain threshold)*/
+  if (cursor_y >= scr->terminal_y - rescroll_threshold) {
+    /* scroll the screen until the section beeing types is centered */
+    int mid = (scr->terminal_y - rescroll_threshold) / 2;
+    int abs_offset = cursor_y - mid;
+
+    for (int i = 0; i < abs_offset; ++i) 
+      scroll_screen(scr, text, SEARCH_DIRECTION_FORWARD);
+    
+    wmove(win, mid, cursor_x);
+    
     wrefresh(win);
   }
   
