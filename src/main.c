@@ -89,7 +89,7 @@ void handle_exit(screen* scr, text_buffer* text, char* buffer) {
   WINDOW* c_window = scr->c_window;
   
   if (text->modified) {
-    int c_ch;
+    int c_ch; 
     cprint_command_attr(c_window, A_REVERSE, "%s", MODIFIED_DESCR);
 
     while ((c_ch = wgetch(c_window)) != '!') {
@@ -299,6 +299,13 @@ void cursor_extreme(screen* scr, text_buffer* text, int direction) {
 }
 
 void insert_character(int ch, text_buffer* text, WINDOW* win, screen* scr) {
+  int cursor_y, cursor_x;
+  getyx(win, cursor_y, cursor_x);
+  if (cursor_y >= scr->terminal_y - 3) {
+    scroll_screen(scr, text, SEARCH_DIRECTION_FORWARD);
+    wrefresh(win);
+  }
+  
   if (LEGAL_CHAR_LOW <= ch && LEGAL_CHAR_UP >= ch) {
     int operation = OPERATION_INSERT;
     int movement = MOVEMENT_FORWARD;
