@@ -9,22 +9,69 @@
 #include <unistd.h>
 #include <math.h>
 
-/*
+/* Buffer structure:
 
+   A structure used to keep track of the pointers of gap buffer
+   and also the logical cursor based of movements in the Frame.
+   
  */
+
 typedef struct {
-  short modified;
-  char* buffer;
+  short modified; /* Buffer modified since save/load? */
+  
+  char* buffer; /* Character array properties */
+  int length;
+
+  /* Pointers to the extremes of the "cursor"/gap */
   char* gap_front;
   char* gap_end;
-  int buffer_viewable_front; /* offset: of the char in the corner of the screen  */
-  int length;
+
+  /*
+    Offset of the char in the (top-left) corner of the screen */
+  int buffer_viewable_front;
+
+  /* Logical cursor position */
   int cursor_line;
   int cursor_offset;
+
+  /*
+    Frame width:
+
+    Used to calculate the relative cursor position */
   int terminal_x;
+  
 } Buffer;
 
+/* Interface functions */
 
+Buffer* init_buffer(char* text_buff, int width) {
+
+  if (width < 36)
+    return NULL;
+  
+  if (!text_buffer)
+    return NULL
+  
+  return _init_buffer(text_buffer, width);
+}
+
+void ins_ch_buffer(Buffer* buff, char ch) {
+  if (!buff) return;
+  
+  _ins_buffer(buff, ch);
+}
+
+void del_ch_buffer(Buffer* buff) {
+  if (!buff) return;
+
+  _del_buffer(buff);
+}
+
+void move_cursor(Buffer* buff, int pos) {
+  if (!buff) return;
+
+  _move_cursor(buff, pos);
+}
 
 /*
   IMPORTANT:

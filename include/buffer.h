@@ -22,6 +22,7 @@ typedef struct {
   int terminal_x;
 } text_buffer;
 
+
 text_buffer* init_text_buffer(char* buffer, int terminal_x);
 
 int resize_buffer(text_buffer* t_buffer);

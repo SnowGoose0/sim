@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Frame strcuture:
+/* Frame structure:
 
    A structure used to keep track of various frame and cursor
    metadata and also stores the window pointers to the text
