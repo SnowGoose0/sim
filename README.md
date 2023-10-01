@@ -1,4 +1,6 @@
 # **Sim** #
+### Refactoring...
+
 ### SIMple Text Editor
 
 **Sim** is a terminal-based text editor that immitates some of the *bare bones* text editing features of [*Vim*](https://github.com/vim/vim). 
